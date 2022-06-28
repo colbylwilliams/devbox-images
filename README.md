@@ -4,11 +4,9 @@ This repo contains custom images to be used with [Microsoft Dev Box](https://tec
 
 See the [workflow file](https://github.com/colbylwilliams/devbox-images/blob/main/.github/workflows/build_images.yml) to see how images are built and deployed.
 
-<sub>:heart: Thanks to @markusheiliger for [doing most the work](https://github.com/markusheiliger/devbox-factory).</sub>
-
 ## Images
 
-[![Build Images](https://github.com/colbylwilliams/devbox-images/actions/workflows/build_images.yml/badge.svg)](https://github.com/colbylwilliams/devbox-images/actions/workflows/build_images.yml)
+<!-- [![Build Images](https://github.com/colbylwilliams/devbox-images/actions/workflows/build_images.yml/badge.svg)](https://github.com/colbylwilliams/devbox-images/actions/workflows/build_images.yml) -->
 
 | Name      | OS                             | Additional Software                                          |
 | --------- | ------------------------------ | -------------------------------------------------------------|
