@@ -26,5 +26,6 @@ The following software is installed on all images. Use [this form](https://githu
 - [Chocolatey](https://chocolatey.org/)
 - [.Net](https://dotnet.microsoft.com/en-us/) (versions 3.1, 5.0, 6.0, 7.0)
 - [Python](https://www.python.org/) (version 3.10.5)
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/what-is-azure-cli) (2.37.0)
 
 [win11]:https://www.microsoft.com/en-us/microsoft-365/windows/windows-11-enterprise
