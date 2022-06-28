@@ -27,4 +27,6 @@ The following software is installed on all images:
 - [.Net](https://dotnet.microsoft.com/en-us/) (versions 3.1, 5.0, 6.0, 7.0)
 - [Python](https://www.python.org/) (version 3.10.5)
 
+Use [this form](https://github.com/colbylwilliams/devbox-images/issues/new?assignees=colbylwilliams&labels=software&template=software_request.yml&title=%5BSoftware%5D%3A+) to request additional software.
+
 [win11]:https://www.microsoft.com/en-us/microsoft-365/windows/windows-11-enterprise
