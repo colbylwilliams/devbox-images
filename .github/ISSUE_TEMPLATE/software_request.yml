@@ -1,0 +1,79 @@
+name: Software Request
+description: File a request for software
+title: '[Software]: '
+labels: ['software']
+assignees:
+  - colbylwilliams
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this software request!
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+  - type: input
+    id: software-name
+    attributes:
+      label: Software Name
+      description: Name of the requested software
+    validations:
+      required: true
+  - type: input
+    id: software-version
+    attributes:
+      label: Software Version
+      description: Version of the requested software
+      placeholder: latest
+    validations:
+      required: true
+  - type: input
+    id: software-url
+    attributes:
+      label: Software URL
+      description: URL where the requested software can be downloaded
+    validations:
+      required: true
+  - type: input
+    id: software-license
+    attributes:
+      label: Software Name
+      description: Name of the requested software
+    validations:
+      required: true
+  - type: checkboxes
+    id: software-license
+    attributes:
+      label: Software License
+      description: Does the requested software require a license?
+      options:
+        - label: License required
+          required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional details?
+      description: What else should we know when evaluating the software?
+    validations:
+      required: true
+  - type: dropdown
+    id: image
+    attributes:
+      label: What Image would you like the software installed on?
+      multiple: true
+      options:
+        - VS2022Box
+        - VSCodeBox
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
