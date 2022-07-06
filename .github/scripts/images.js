@@ -3,7 +3,7 @@ const yaml = require('js-yaml');
 
 module.exports = async ({ github, context, core, glob, exec, }) => {
 
-    const { resourceGroup, galleryName } = process.env;
+    const { galleryResourceGroup, galleryName } = process.env;
     const workspace = process.env.GITHUB_WORKSPACE;
 
     core.startGroup(`Checking for changed files`);
@@ -39,8 +39,8 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
         const image = yaml.load(contents);
 
         image.name = imageName;
-        image.gallery = galleryName;
-        image.resourceGroup = resourceGroup;
+        image.galleryName = galleryName;
+        image.galleryResourceGroup = galleryResourceGroup;
 
         image.source = file.split('/image.y')[0];
         image.path = image.source.split(`${workspace}/`)[1];
@@ -48,37 +48,43 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
         image.locations = JSON.stringify(image.locations);
 
+        image.buildResourceGroup = image.buildResourceGroup || '';
+
+        const useBuildGroup = image.buildResourceGroup && image.buildResourceGroup.length > 0;
+
+        image.tempResourceGroup = useBuildGroup ? '' : `${image.galleryName}-${image.name}-${context.runNumber}`;
+
         if (!image.version) {
-            core.warning(`Skipping ${imageName} because of missing version information`);
+            core.warning(`Skipping ${image.name} because of missing version information`);
         } else {
 
             const imgDefShowCmd = [
                 'sig', 'image-definition', 'show',
                 '--only-show-errors',
-                '-g', resourceGroup,
-                '-r', galleryName,
-                '-i', imageName
+                '-g', image.galleryResourceGroup,
+                '-r', image.galleryName,
+                '-i', image.name
             ];
 
-            core.info(`Checking if image definition exists for ${imageName}`);
+            core.info(`Checking if image definition exists for ${image.name}`);
             const imgDefShow = await exec.getExecOutput('az', imgDefShowCmd, { silent: true, ignoreReturnCode: true });
 
             if (imgDefShow.exitCode === 0) {
 
-                core.info(`Found existing image ${imageName}`);
+                core.info(`Found existing image ${image.name}`);
                 const img = JSON.parse(imgDefShow.stdout);
-                image.location = img.location;
+                image.location = useBuildGroup ? '' : img.location;
 
             } else if (imgDefShow.stderr.includes('Code: ResourceNotFound')) {
 
-                core.info(`Image ${imageName} does not exist in gallery ${galleryName}`);
+                core.info(`Image ${image.name} does not exist in gallery ${image.galleryName}`);
 
                 const imgDefCreateCmd = [
                     'sig', 'image-definition', 'create',
                     '--only-show-errors',
-                    '-g', resourceGroup,
-                    '-r', galleryName,
-                    '-i', imageName,
+                    '-g', image.galleryResourceGroup,
+                    '-r', image.galleryName,
+                    '-i', image.name,
                     '-p', image.publisher,
                     '-f', image.offer,
                     '-s', image.sku,
@@ -89,49 +95,49 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
                     '--features', 'SecurityType=TrustedLaunch'
                 ];
 
-                core.info(`Creating new image definition for ${imageName}`);
+                core.info(`Creating new image definition for ${image.name}`);
 
                 const imgDefCreate = await exec.getExecOutput('az', imgDefCreateCmd, { silent: true, ignoreReturnCode: true });
 
                 if (imgDefCreate.exitCode === 0) {
 
-                    core.info(`Created image definition for ${imageName}`);
+                    core.info(`Created image definition for ${image.name}`);
                     const img = JSON.parse(imgDefCreate.stdout);
-                    image.location = img.location;
+                    image.location = useBuildGroup ? '' : img.location;
 
                 } else {
-                    core.setFailed(`Failed to create image definition for ${imageName} \n ${imgDefCreate.stderr}`);
+                    core.setFailed(`Failed to create image definition for ${image.name} \n ${imgDefCreate.stderr}`);
                 }
 
             } else {
-                core.setFailed(`Failed to get image definition for ${imageName} \n ${imgDefShow.stderr}`);
+                core.setFailed(`Failed to get image definition for ${image.name} \n ${imgDefShow.stderr}`);
             }
 
             const imgVersionShowCmd = [
                 'sig', 'image-version', 'show',
                 '--only-show-errors',
-                '-g', resourceGroup,
-                '-r', galleryName,
-                '-i', imageName,
+                '-g', image.galleryResourceGroup,
+                '-r', image.galleryName,
+                '-i', image.name,
                 '-e', image.version
             ];
 
-            core.info(`Checking if image version ${image.version} already exists for ${imageName}`);
+            core.info(`Checking if image version ${image.version} already exists for ${image.name}`);
             const imgVersionShow = await exec.getExecOutput('az', imgVersionShowCmd, { silent: true, ignoreReturnCode: true });
 
             if (imgVersionShow.exitCode !== 0) {
 
                 if (imgVersionShow.stderr.includes('Code: ResourceNotFound')) {
-                    core.info(`Image version ${image.version} does not exist for ${imageName}. Creating`);
+                    core.info(`Image version ${image.version} does not exist for ${image.name}. Creating`);
                     include.push(image);
                 } else {
-                    core.setFailed(`Failed to check for existing image version ${image.version} for ${imageName} \n ${imgVersionShow.stderr}`);
+                    core.setFailed(`Failed to check for existing image version ${image.version} for ${image.name} \n ${imgVersionShow.stderr}`);
                 }
 
             } else if (image.changed) {
-                core.setFailed(`Image version ${image.version} already exists for ${imageName} but image definition files changed. Please update the version number or delete the image version and try again.`);
+                core.setFailed(`Image version ${image.version} already exists for ${image.name} but image definition files changed. Please update the version number or delete the image version and try again.`);
             } else {
-                core.info(`Image version ${image.version} already exists for ${imageName} and image definition is unchanged. Skipping`);
+                core.info(`Image version ${image.version} already exists for ${image.name} and image definition is unchanged. Skipping`);
             }
         }
 
@@ -140,13 +146,31 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
 
     if (include.length > 0) {
-        const rows = [[{ data: 'Name', header: true }, { data: 'Publisher', header: true }, { data: 'Offer', header: true }, { data: 'SKU', header: true }, { data: 'OS', header: true }, { data: 'Version', header: true }]];
+
+        const rows = [[
+            { header: true, data: 'Name' },
+            { header: true, data: 'Publisher' },
+            { header: true, data: 'Offer' },
+            { header: true, data: 'SKU' },
+            { header: true, data: 'OS' },
+            { header: true, data: 'Version' }
+        ]];
+
         for (const i of include) {
-            rows.push([i.name, i.publisher, i.offer, i.sku, i.os, i.version]);
+            rows.push([
+                i.name,
+                i.publisher,
+                i.offer,
+                i.sku,
+                i.os,
+                i.version
+            ]);
         }
+
         await core.summary
             .addHeading('Images prepared for update', 3)
             .addTable(rows).write();
+
     } else {
         await core.summary.addHeading('No images were built', 4).write();
     }
