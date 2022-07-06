@@ -48,8 +48,6 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
         image.locations = JSON.stringify(image.locations);
 
-        image.buildResourceGroup = image.buildResourceGroup || '';
-
         const useBuildGroup = image.buildResourceGroup && image.buildResourceGroup.length > 0;
 
         image.tempResourceGroup = useBuildGroup ? '' : `${image.galleryName}-${image.name}-${context.runNumber}`;
