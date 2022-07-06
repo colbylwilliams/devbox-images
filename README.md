@@ -58,14 +58,32 @@ The solution requires a Service Principal to provision resources associated with
 
 **IMPORTANT: Once you create a new Service Principal you must [assign it the following roles in RBAC][assign-rbac]:**:
 
-- **Contributor** on the subscription used to provision resources, or
+- **Contributor** on the subscription used to provision resources, **OR**
 - **Owner** on a specific (existing) resource group (see [Resource Group Usage](#resource-group-usage) below) and **Contributor** on the [Azure Compute Gallery][az-gallery] (and its resource group)
 
 ### `AZURE_CREDENTIALS`
 
 In your fork create a new [repository secret](repo-secret) named `AZURE_CREDENTIALS` with a value that contains credentials for the service principal created above. For details on how to create these credentials, see the [Azure Login action docs](create-sp).
 
-**Important: when pasting in the value for `AZURE_CREDENTIALS`, remove all line breaks so that the JSON is on a single line. Otherwise GitHub will assume subscriptionId and tenantId are secrets and prevent them from being share across workflow jobs.**
+Example:
+
+```sh
+az ad sp create-for-rbac --sdk-auth --role contributor --scopes /subscriptions/<GUID> -n MyUniqueName
+```
+
+output:
+
+```json
+{
+  "clientId": "<GUID>",
+  "clientSecret": "<STRING>",
+  "subscriptionId": "<GUID>",
+  "tenantId": "<GUID>"
+  (...)
+}
+```
+
+**IMPORTANT: when pasting in the value for `AZURE_CREDENTIALS`, remove all line breaks so that the JSON is on a single line. Otherwise GitHub will assume subscriptionId and tenantId are secrets and prevent them from being share across workflow jobs.**
 
 Example:
 
