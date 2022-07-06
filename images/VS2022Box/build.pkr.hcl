@@ -65,6 +65,6 @@ build {
   }
 
   post-processor "shell-local" {
-    inline  = [ "az image delete -g ${var.resourceGroup} -n ${var.image}" ]
+    inline  = [ "az image delete -g ${var.tempResourceGroup ?? var.buildResourceGroup} -n ${var.image}" ]
   }
 }
