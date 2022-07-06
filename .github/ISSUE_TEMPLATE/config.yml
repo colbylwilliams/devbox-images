@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Community Support
-    url: https://github.community/
-    about: Please ask and answer questions here.
+  - name: Security Vulnerabilities
+    url: https://msrc.microsoft.com/create-report
+    about: Please report security vulnerabilities here or email secure@microsoft.com.
   - name: Security Bug Bounty
-    url: https://bounty.github.com/
-    about: Please report security vulnerabilities here.
+    url: https://microsoft.com/msrc/bounty
+    about: Learn more about Microsoft Bug Bounty Program here.
