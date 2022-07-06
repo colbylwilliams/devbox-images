@@ -39,6 +39,6 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
         .addHeading('Gallery to publish images', 3)
         .addTable(rows).write();
 
-    core.setOutput('name', JSON.stringify(gallery.name));
-    core.setOutput('resourceGroup', JSON.stringify(gallery.resourceGroup));
+    core.setOutput('name', gallery.name);
+    core.setOutput('resourceGroup', gallery.resourceGroup);
 };
