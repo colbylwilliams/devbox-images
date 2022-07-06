@@ -2,7 +2,7 @@
 
 This repo contains custom images to be used with [Microsoft Dev Box](https://techcommunity.microsoft.com/t5/azure-developer-community-blog/introducing-microsoft-dev-box/ba-p/3412063).  It demonstrates how to create custom images with pre-installed software using [Packer](https://www.packer.io/) and shared them via [Azure Compute Gallery](https://docs.microsoft.com/en-us/azure/virtual-machines/shared-image-galleries).
 
-See the [workflow file](https://github.com/colbylwilliams/devbox-images/blob/main/.github/workflows/build_images.yml) to see how images are built and deployed.
+See the [workflow file](.github/workflows/build_images.yml) to see how images are built and deployed.
 
 ## Images
 
@@ -30,22 +30,24 @@ The following software is installed on all images. Use [this form](https://githu
 - [Python](https://www.python.org/) (version 3.10.5)
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/what-is-azure-cli) (2.37.0)
 
-## Usage
+---
+
+# Usage
 
 To get started, [fork][fork] this repository.
 
-### Azure Compute Gallery
+## Azure Compute Gallery
 
-Open the `gallery.yml` file in the root of the repository and update the environment variables: [`name`](https://github.com/colbylwilliams/devbox-images/blob/main/gallery.yml#L1) and [`resourceGroup`](https://github.com/colbylwilliams/devbox-images/blob/main/gallery.yml#L2) to match your [Azure Compute Gallery][az-gallery].
+Open the [`gallery.yml`](gallery.yml) file in the root of the repository and update the environment variables: [`name`](gallery.yml#L1) and [`resourceGroup`](gallery.yml#L2) to match your [Azure Compute Gallery][az-gallery].
 
-### Service Principal
+## Service Principal
 
 The solution requires a service principal to provision resources associated with create a new image (VMs, etc.). This service principal must have:
 
 - Contributor access to the [Azure Compute Gallery][az-gallery] and its resource group
-- Contributor permissions to the subscription, or Owner access to a specific (existing) resource group (see Resource Group Usage below)
+- Contributor permissions to the subscription, or Owner access to a specific (existing) resource group (see [Resource Group Usage](#resource-group-usage) below)
 
-#### `AZURE_CREDENTIALS`
+### `AZURE_CREDENTIALS`
 
 In your fork create a new [repository secret](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository) named `AZURE_CREDENTIALS` with a value that contains credentials for a service principal the permissions outlined above. For details on how to create these credentials, see the [Azure Login action docs](https://github.com/Azure/login#configure-deployment-credentials).
 
@@ -63,7 +65,7 @@ This solution uses Packer's [Azure builder][az-builder] which can either provisi
 
 To use an existing resource group you **must** provide a value for `buildResourceGroup` in the images `image.yml` file.
 
-## Contributing
+# Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
