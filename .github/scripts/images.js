@@ -52,6 +52,8 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
         image.tempResourceGroup = useBuildGroup ? '' : `${image.galleryName}-${image.name}-${context.runNumber}`;
 
+        image.resolvedResourceGroup = useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
+
         if (!image.version) {
             core.warning(`Skipping ${image.name} because of missing version information`);
         } else {
@@ -147,21 +149,23 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
         const rows = [[
             { header: true, data: 'Name' },
+            { header: true, data: 'Version' },
             { header: true, data: 'Publisher' },
             { header: true, data: 'Offer' },
             { header: true, data: 'SKU' },
             { header: true, data: 'OS' },
-            { header: true, data: 'Version' }
+            { header: true, data: 'Resource Group' },
         ]];
 
         for (const i of include) {
             rows.push([
                 i.name,
+                i.version,
                 i.publisher,
                 i.offer,
                 i.sku,
                 i.os,
-                i.version
+                i.resolvedResourceGroup,
             ]);
         }
 

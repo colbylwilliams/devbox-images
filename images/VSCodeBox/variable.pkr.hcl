@@ -34,6 +34,12 @@ variable "replicaLocations" {
   description = "The locations to replicate the image to"
 }
 
+variable "resolvedResourceGroup" {
+  type    = string
+  default = ""
+  description = ""
+}
+
 variable "location" {
   type    = string
   default = ""
