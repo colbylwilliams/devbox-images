@@ -36,27 +36,41 @@ The following software is installed on all images. Use [this form](https://githu
 
 To get started, [fork][fork] this repository.
 
+_NOTE: The workflow that builds and publishes the images [is only triggered](.github/workflows/build_images.yml#L8-L10) if files the `/images` or `/scripts` folders change.  After completing the steps below, modify any file within those two folders to initiate a build._
+
 ## Azure Compute Gallery
 
-Open the [`gallery.yml`](gallery.yml) file in the root of the repository and update the environment variables: [`name`](gallery.yml#L1) and [`resourceGroup`](gallery.yml#L2) to match your [Azure Compute Gallery][az-gallery].
+Open the [`gallery.yml`](gallery.yml) file in the root of the repository and update following properties to match your [Azure Compute Gallery][az-gallery]:
+
+- [`name`](gallery.yml#L1) - the name of your Azure Compute Gallery
+- [`resourceGroup`](gallery.yml#L2) - The resource group that contains your Azure Compute Gallery
+
+Example:
+
+```yaml
+name: MyGallery
+resourceGroup: MyGallery-RG
+```
 
 ## Service Principal
 
-The solution requires a service principal to provision resources associated with create a new image (VMs, etc.). This service principal must have:
+The solution requires a Service Principal to provision resources associated with create a new image (VMs, etc.).  See the [Azure Login action docs](create-sp) for instructions on how to create.
 
-- Contributor access to the [Azure Compute Gallery][az-gallery] and its resource group
-- Contributor permissions to the subscription, or Owner access to a specific (existing) resource group (see [Resource Group Usage](#resource-group-usage) below)
+**IMPORTANT: Once you create a new Service Principal you must [assign it the following roles in RBAC][assign-rbac]:**:
+
+- **Contributor** on the subscription used to provision resources, or
+- **Owner** on a specific (existing) resource group (see [Resource Group Usage](#resource-group-usage) below) and **Contributor** on the [Azure Compute Gallery][az-gallery] (and its resource group)
 
 ### `AZURE_CREDENTIALS`
 
-In your fork create a new [repository secret](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository) named `AZURE_CREDENTIALS` with a value that contains credentials for a service principal the permissions outlined above. For details on how to create these credentials, see the [Azure Login action docs](https://github.com/Azure/login#configure-deployment-credentials).
+In your fork create a new [repository secret](repo-secret) named `AZURE_CREDENTIALS` with a value that contains credentials for the service principal created above. For details on how to create these credentials, see the [Azure Login action docs](create-sp).
 
 **Important: when pasting in the value for `AZURE_CREDENTIALS`, remove all line breaks so that the JSON is on a single line. Otherwise GitHub will assume subscriptionId and tenantId are secrets and prevent them from being share across workflow jobs.**
 
 Example:
 
 ```json
-{ "clientId": "<GUID>", "clientSecret": "<GUID>", "subscriptionId": "<GUID>", "tenantId": "<GUID>" }
+{ "clientId": "<GUID>", "clientSecret": "<GUID>", "subscriptionId": "<GUID>", "tenantId": "<GUID>", (...) }
 ```
 
 ## Resource Group Usage
@@ -84,3 +98,6 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 [fork]:https://docs.github.com/en/get-started/quickstart/fork-a-repo
 [az-builder]:https://www.packer.io/plugins/builders/azure/arm
 [az-gallery]:https://docs.microsoft.com/en-us/azure/virtual-machines/shared-image-galleries?tabs=azure-cli
+[create-sp]:https://github.com/Azure/login#configure-deployment-credentials
+[repo-secret]:https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository
+[assign-rbac]:https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current
