@@ -6,18 +6,18 @@ See the [workflow file](.github/workflows/build_images.yml) to see how images ar
 
 ## Images
 
-[![Build Images](https://github.com/colbylwilliams/devbox-images/actions/workflows/build_images.yml/badge.svg)](https://github.com/colbylwilliams/devbox-images/actions/workflows/build_images.yml)
+[![Build Images](/../../actions/workflows/build_images.yml/badge.svg)](/../../actions/workflows/build_images.yml)
 
 | Name      | OS                             | Additional Software                                          |
 | --------- | ------------------------------ | -------------------------------------------------------------|
 | VS2022Box | [Windows 11 Enterprise][win11] | [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) |
 | VSCodeBox | [Windows 11 Enterprise][win11] |                                                              |
 
-Use [this form](https://github.com/colbylwilliams/devbox-images/issues/new?assignees=colbylwilliams&labels=image&template=request_image.yml&title=%5BImage%5D%3A+) to request a new image.
+Use [this form](/../../issues/new?assignees=colbylwilliams&labels=image&template=request_image.yml&title=%5BImage%5D%3A+) to request a new image.
 
 ### Preinstalled Software
 
-The following software is installed on all images. Use [this form](https://github.com/colbylwilliams/devbox-images/issues/new?assignees=colbylwilliams&labels=software&template=request_software.yml&title=%5BSoftware%5D%3A+) to request additional software.
+The following software is installed on all images. Use [this form](/../../issues/new?assignees=colbylwilliams&labels=software&template=request_software.yml&title=%5BSoftware%5D%3A+) to request additional software.
 
 - [Microsoft 365 Apps](https://www.microsoft.com/en-us/microsoft-365/products-apps-services)
 - [Visual Studio Code](https://code.visualstudio.com/)
