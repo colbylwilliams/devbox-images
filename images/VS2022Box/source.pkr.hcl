@@ -31,3 +31,4 @@ source "azure-arm" "vm" {
     replication_regions  = var.replicaLocations
     storage_account_type = "Standard_LRS"
   }
+}
