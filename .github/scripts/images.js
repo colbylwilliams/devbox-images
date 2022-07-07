@@ -3,6 +3,8 @@ const yaml = require('js-yaml');
 
 module.exports = async ({ github, context, core, glob, exec, }) => {
 
+    const NOT_FOUND_CODE = 'Code: ResourceNotFound';
+
     const { galleryResourceGroup, galleryName } = process.env;
     const workspace = process.env.GITHUB_WORKSPACE;
 
@@ -71,13 +73,51 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
             if (imgDefShow.exitCode === 0) {
 
-                core.info(`Found existing image ${image.name}`);
+                core.info(`Found existing image definition for ${image.name}`);
                 const img = JSON.parse(imgDefShow.stdout);
                 image.location = useBuildGroup ? '' : img.location;
 
-            } else if (imgDefShow.stderr.includes('Code: ResourceNotFound')) {
+                // image definition exists, check if the version already exists
 
-                core.info(`Image ${image.name} does not exist in gallery ${image.galleryName}`);
+                const imgVersionShowCmd = [
+                    'sig', 'image-version', 'show',
+                    '--only-show-errors',
+                    '-g', image.galleryResourceGroup,
+                    '-r', image.galleryName,
+                    '-i', image.name,
+                    '-e', image.version
+                ];
+
+                core.info(`Checking if image version ${image.version} already exists for ${image.name}`);
+                const imgVersionShow = await exec.getExecOutput('az', imgVersionShowCmd, { silent: true, ignoreReturnCode: true });
+
+                if (imgVersionShow.exitCode !== 0) {
+                    if (imgVersionShow.stderr.includes(NOT_FOUND_CODE)) {
+
+                        // image version does not exist, add it to the list of images to create
+                        core.info(`Image version ${image.version} does not exist for ${image.name}. Creating`);
+                        include.push(image);
+                    } else {
+
+                        // image version exists, but we don't know what happened
+                        core.setFailed(`Failed to check for existing image version ${image.version} for ${image.name} \n ${imgVersionShow.stderr}`);
+                    }
+
+                } else if (image.changed) {
+
+                    // image version already exists, but the image source has changed, so we the version number needs to be updated
+                    core.setFailed(`Image version ${image.version} already exists for ${image.name} but image definition files changed. Please update the version number or delete the image version and try again.`);
+                } else {
+
+                    // image version already exists, and the image source has not changed, so we don't need to do anything
+                    core.info(`Image version ${image.version} already exists for ${image.name} and image definition is unchanged. Skipping`);
+                }
+
+            } else if (imgDefShow.stderr.includes(NOT_FOUND_CODE)) {
+
+                // image definition does not exist, create it and skip the version check
+
+                core.info(`Image definition for ${image.name} does not exist in gallery ${image.galleryName}`);
 
                 const imgDefCreateCmd = [
                     'sig', 'image-definition', 'create',
@@ -96,12 +136,11 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
                 ];
 
                 core.info(`Creating new image definition for ${image.name}`);
-
                 const imgDefCreate = await exec.getExecOutput('az', imgDefCreateCmd, { silent: true, ignoreReturnCode: true });
 
                 if (imgDefCreate.exitCode === 0) {
 
-                    core.info(`Created image definition for ${image.name}`);
+                    core.info(`Successfully created image definition for ${image.name}`);
                     const img = JSON.parse(imgDefCreate.stdout);
                     image.location = useBuildGroup ? '' : img.location;
 
@@ -113,32 +152,7 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
                 core.setFailed(`Failed to get image definition for ${image.name} \n ${imgDefShow.stderr}`);
             }
 
-            const imgVersionShowCmd = [
-                'sig', 'image-version', 'show',
-                '--only-show-errors',
-                '-g', image.galleryResourceGroup,
-                '-r', image.galleryName,
-                '-i', image.name,
-                '-e', image.version
-            ];
 
-            core.info(`Checking if image version ${image.version} already exists for ${image.name}`);
-            const imgVersionShow = await exec.getExecOutput('az', imgVersionShowCmd, { silent: true, ignoreReturnCode: true });
-
-            if (imgVersionShow.exitCode !== 0) {
-
-                if (imgVersionShow.stderr.includes('Code: ResourceNotFound')) {
-                    core.info(`Image version ${image.version} does not exist for ${image.name}. Creating`);
-                    include.push(image);
-                } else {
-                    core.setFailed(`Failed to check for existing image version ${image.version} for ${image.name} \n ${imgVersionShow.stderr}`);
-                }
-
-            } else if (image.changed) {
-                core.setFailed(`Image version ${image.version} already exists for ${image.name} but image definition files changed. Please update the version number or delete the image version and try again.`);
-            } else {
-                core.info(`Image version ${image.version} already exists for ${image.name} and image definition is unchanged. Skipping`);
-            }
         }
 
         core.endGroup();
