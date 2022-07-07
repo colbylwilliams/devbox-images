@@ -3,6 +3,7 @@ name: Build Images
 concurrency: ${{ github.ref }}
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -66,8 +67,9 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Setup Packer
-        uses: hashicorp-contrib/setup-packer@v1.0.0
+      - name: Init Packer
+        working-directory: ${{ matrix.source }}
+        run: packer init .
 
       - name: Build Image with Packer
         working-directory: ${{ matrix.source }}
