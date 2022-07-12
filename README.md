@@ -36,7 +36,7 @@ The following software is installed on all images. Use [this form](/../../issues
 
 To get started, [fork][fork] this repository.
 
-_NOTE: The workflow that builds and publishes the images [is only triggered](.github/workflows/build_images.yml#L8-L10) if files the `/images` or `/scripts` folders change.  After completing the steps below, modify any file within those two folders to initiate a build._
+_NOTE: The workflow that builds and publishes the images [is only triggered](.github/workflows/build_images.yml#L8-L10) if files the `/images` or `/scripts` folders change.  After completing the steps below, modify any file within those two folders (like changing the `version` in the `image.yml` files) to initiate a build._
 
 ## Azure Compute Gallery
 
