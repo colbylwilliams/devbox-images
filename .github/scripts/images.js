@@ -32,12 +32,25 @@ const getImage = async (core, context, file) => {
     // if (image.repos)
     //     image.repos = JSON.parse(image.repos);
 
+    // if (image.repos) {
+    //     for (const i in image.repos) {
+    //         core.info(`${i} : ${image.repos[i]}`);
+    //         const repo = image.repos[i];
+    //         core.info(`Repo: ${repo.url}`);
+    //         core.info(`Repo: ${repo.secret}`);
+    //     }
+    // }
+
     if (image.repos) {
 
         const repos = [];
 
         for (const i in image.repos) {
-            repos.push(image.repos[i]);
+            const repo = image.repos[i];
+            repos.push({
+                url: repo.url,
+                secret: repo.secret
+            });
         }
 
         for (const repo in repos) {
