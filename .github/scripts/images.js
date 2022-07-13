@@ -3,6 +3,9 @@ const yaml = require('js-yaml');
 
 const parse = async (core, file) => {
 
+    const { galleryResourceGroup, galleryName } = process.env;
+    const workspace = process.env.GITHUB_WORKSPACE;
+
     const imageName = file.split('/').slice(-2)[0];
 
     core.startGroup(`Processing image config ${imageName} : ${file}`);
@@ -15,7 +18,7 @@ const parse = async (core, file) => {
     image.galleryResourceGroup = galleryResourceGroup;
 
     image.source = file.split('/image.y')[0];
-    // image.path = image.source.split(`${workspace}/`)[1];
+    image.path = image.source.split(`${workspace}/`)[1];
     // image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
 
     image.locations = JSON.stringify(image.locations);
@@ -33,8 +36,8 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
     const NOT_FOUND_CODE = 'Code: ResourceNotFound';
 
-    const { galleryResourceGroup, galleryName } = process.env;
-    const workspace = process.env.GITHUB_WORKSPACE;
+    // const { galleryResourceGroup, galleryName } = process.env;
+    // const workspace = process.env.GITHUB_WORKSPACE;
 
     core.startGroup(`Checking for changed files`);
 
@@ -65,7 +68,7 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
         const image = await parse(core, file);
 
-        image.path = image.source.split(`${workspace}/`)[1];
+        // image.path = image.source.split(`${workspace}/`)[1];
         image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
 
 
