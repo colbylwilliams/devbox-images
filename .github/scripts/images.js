@@ -1,7 +1,8 @@
 const fs = require('fs/promises');
 const yaml = require('js-yaml');
 
-function parse(core, file) {
+const parse = async (core, file) => {
+
     const imageName = file.split('/').slice(-2)[0];
 
     core.startGroup(`Processing image config ${imageName} : ${file}`);
@@ -14,8 +15,8 @@ function parse(core, file) {
     image.galleryResourceGroup = galleryResourceGroup;
 
     image.source = file.split('/image.y')[0];
-    image.path = image.source.split(`${workspace}/`)[1];
-    image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
+    // image.path = image.source.split(`${workspace}/`)[1];
+    // image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
 
     image.locations = JSON.stringify(image.locations);
 
@@ -62,7 +63,11 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
     for (const file of files) {
 
-        const image = parse(core, file);
+        const image = await parse(core, file);
+
+        image.path = image.source.split(`${workspace}/`)[1];
+        image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
+
 
         // const imageName = file.split('/').slice(-2)[0];
 
