@@ -23,14 +23,30 @@ const getImage = async (core, context, file) => {
 
     image.locations = JSON.stringify(image.locations);
 
-    if (image.repos)
-        image.repos = JSON.parse(image.repos);
-
     image.useBuildGroup = image.buildResourceGroup && image.buildResourceGroup.length > 0;
 
     image.tempResourceGroup = image.useBuildGroup ? '' : `${image.galleryName}-${image.name}-${context.runNumber}`;
 
     image.resolvedResourceGroup = image.useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
+
+    // if (image.repos)
+    //     image.repos = JSON.parse(image.repos);
+
+    if (image.repos) {
+        core.info(image.repos);
+        core.info(` `);
+        core.info(JSON.stringify(image));
+        for (const repo in image.repos) {
+            core.info(` `);
+            core.info(repo);
+            core.info(` `);
+            core.info(JSON.stringify(repo));
+            core.info(` `);
+            core.info(`Repo: ${repo.url}`);
+            core.info(`Repo: ${repo.secret}`);
+            core.info(` `);
+        }
+    }
 
     return image;
 }
@@ -74,16 +90,6 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
         // image.path = image.source.split(`${workspace}/`)[1];
         image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
 
-        if (image.repos) {
-            core.info(image.repos);
-            core.info(` `);
-            core.info(JSON.stringify(image));
-            for (const repo in image.repos) {
-                core.info(`Repo: ${repo.url}`);
-                core.info(`Repo: ${repo.secret}`);
-                core.info(` `);
-            }
-        }
 
 
         if (!image.version) {
