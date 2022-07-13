@@ -51,7 +51,11 @@ const getImage = async (core, context, file) => {
                 url: repo.url,
                 secret: repo.secret
             });
+            core.info(`- Repo: ${repo.url}`);
+            core.info(`- Repo: ${repo.secret}`);
         }
+
+        core.info(repos);
 
         for (const repo in repos) {
             core.info(`Repo: ${repo.url}`);
