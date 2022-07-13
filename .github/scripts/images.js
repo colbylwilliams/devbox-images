@@ -1,7 +1,7 @@
 const fs = require('fs/promises');
 const yaml = require('js-yaml');
 
-const parse = async (core, file) => {
+const getImage = async (core, context, file) => {
 
     const { galleryResourceGroup, galleryName } = process.env;
     const workspace = process.env.GITHUB_WORKSPACE;
@@ -66,7 +66,7 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
     for (const file of files) {
 
-        const image = await parse(core, file);
+        const image = await getImage(core, context, file);
 
         // image.path = image.source.split(`${workspace}/`)[1];
         image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
