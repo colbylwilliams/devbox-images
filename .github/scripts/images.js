@@ -71,29 +71,14 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
         // image.path = image.source.split(`${workspace}/`)[1];
         image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
 
+        if (image.repos) {
+            for (const repo in image.repos) {
+                core.info(`Repo: ${repo.url}`);
+                core.info(`Repo: ${repo.secret}`);
+                core.info(` `);
+            }
+        }
 
-        // const imageName = file.split('/').slice(-2)[0];
-
-        // core.startGroup(`Processing image config ${imageName} : ${file}`);
-
-        // const contents = await fs.readFile(file, 'utf8');
-        // const image = yaml.load(contents);
-
-        // image.name = imageName;
-        // image.galleryName = galleryName;
-        // image.galleryResourceGroup = galleryResourceGroup;
-
-        // image.source = file.split('/image.y')[0];
-        // image.path = image.source.split(`${workspace}/`)[1];
-        // image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
-
-        // image.locations = JSON.stringify(image.locations);
-
-        // const useBuildGroup = image.buildResourceGroup && image.buildResourceGroup.length > 0;
-
-        // image.tempResourceGroup = useBuildGroup ? '' : `${image.galleryName}-${image.name}-${context.runNumber}`;
-
-        // image.resolvedResourceGroup = useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
 
         if (!image.version) {
             core.warning(`Skipping ${image.name} because of missing version information`);

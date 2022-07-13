@@ -7,3 +7,8 @@ os: Windows
 locations:
   - eastus
   - westeurope
+repos:
+  - url: https://github.com/colbylwilliams/devbox-images
+    secret: TOKEN_AA
+  - url: https://github.com/colbylwilliams/az-util
+    secret: TOKEN_BB
