@@ -29,35 +29,16 @@ const getImage = async (core, context, file) => {
 
     image.resolvedResourceGroup = image.useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
 
-    // if (image.repos)
-    //     image.repos = JSON.parse(image.repos);
-
-    // if (image.repos) {
-    //     for (const i in image.repos) {
-    //         core.info(`${i} : ${image.repos[i]}`);
-    //         const repo = image.repos[i];
-    //         core.info(`Repo: ${repo.url}`);
-    //         core.info(`Repo: ${repo.secret}`);
-    //     }
-    // }
-
     if (image.repos) {
 
         const repos = [];
 
-        for (const i in image.repos) {
-            const repo = image.repos[i];
-            repos.push({
-                url: repo.url,
-                secret: repo.secret
-            });
-            core.info(`- Repo: ${repo.url}`);
-            core.info(`- Repo: ${repo.secret}`);
-        }
+        for (const i in image.repos)
+            repos.push(image.repos[i]);
 
-        core.info(repos);
+        image.repos = repos;
 
-        for (const repo of repos) {
+        for (const repo of image.repos) {
             core.info(`Repo: ${repo.url}`);
             core.info(`Repo: ${repo.secret}`);
         }
