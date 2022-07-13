@@ -10,8 +10,8 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
     core.startGroup(`Checking for changed files`);
 
-    core.info(context.payload)
-    core.info(context)
+    // core.info(context.payload)
+    core.info(JSON.stringify(context))
 
     const compare = await github.rest.repos.compareCommitsWithBasehead({
         owner: context.repo.owner,
