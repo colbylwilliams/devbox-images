@@ -37,7 +37,7 @@ const getImage = async (core, context, file) => {
         const repos = [];
 
         for (const i in image.repos) {
-            repos.append(image.repos[i]);
+            repos.push(image.repos[i]);
         }
 
         for (const repo in repos) {
