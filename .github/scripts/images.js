@@ -72,6 +72,9 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
         image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
 
         if (image.repos) {
+            core.info(image.repos);
+            core.info(` `);
+            core.info(JSON.stringify(image));
             for (const repo in image.repos) {
                 core.info(`Repo: ${repo.url}`);
                 core.info(`Repo: ${repo.secret}`);
