@@ -23,6 +23,9 @@ const getImage = async (core, context, file) => {
 
     image.locations = JSON.stringify(image.locations);
 
+    if (image.repos)
+        image.repos = JSON.parse(image.repos);
+
     image.useBuildGroup = image.buildResourceGroup && image.buildResourceGroup.length > 0;
 
     image.tempResourceGroup = image.useBuildGroup ? '' : `${image.galleryName}-${image.name}-${context.runNumber}`;
