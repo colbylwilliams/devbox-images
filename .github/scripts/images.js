@@ -36,12 +36,9 @@ const getImage = async (core, context, file) => {
         core.info(image.repos);
         core.info(` `);
         core.info(JSON.stringify(image));
-        for (const repo in image.repos) {
-            core.info(` `);
-            core.info(repo);
-            core.info(` `);
-            core.info(JSON.stringify(repo));
-            core.info(` `);
+        for (const i in image.repos) {
+            core.info(`${i} : ${image.repos[i]}`);
+            const repo = image.repos[i];
             core.info(`Repo: ${repo.url}`);
             core.info(`Repo: ${repo.secret}`);
             core.info(` `);
