@@ -1,6 +1,33 @@
 const fs = require('fs/promises');
 const yaml = require('js-yaml');
 
+function parse(core, file) {
+    const imageName = file.split('/').slice(-2)[0];
+
+    core.startGroup(`Processing image config ${imageName} : ${file}`);
+
+    const contents = await fs.readFile(file, 'utf8');
+    const image = yaml.load(contents);
+
+    image.name = imageName;
+    image.galleryName = galleryName;
+    image.galleryResourceGroup = galleryResourceGroup;
+
+    image.source = file.split('/image.y')[0];
+    image.path = image.source.split(`${workspace}/`)[1];
+    image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
+
+    image.locations = JSON.stringify(image.locations);
+
+    image.useBuildGroup = image.buildResourceGroup && image.buildResourceGroup.length > 0;
+
+    image.tempResourceGroup = image.useBuildGroup ? '' : `${image.galleryName}-${image.name}-${context.runNumber}`;
+
+    image.resolvedResourceGroup = image.useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
+
+    return image;
+}
+
 module.exports = async ({ github, context, core, glob, exec, }) => {
 
     const NOT_FOUND_CODE = 'Code: ResourceNotFound';
@@ -10,8 +37,7 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
     core.startGroup(`Checking for changed files`);
 
-    // core.info(context.payload)
-    core.info(JSON.stringify(context))
+    // core.info(JSON.stringify(context))
 
     const compare = await github.rest.repos.compareCommitsWithBasehead({
         owner: context.repo.owner,
@@ -36,28 +62,30 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
     for (const file of files) {
 
-        const imageName = file.split('/').slice(-2)[0];
+        const image = parse(core, file);
 
-        core.startGroup(`Processing image config ${imageName} : ${file}`);
+        // const imageName = file.split('/').slice(-2)[0];
 
-        const contents = await fs.readFile(file, 'utf8');
-        const image = yaml.load(contents);
+        // core.startGroup(`Processing image config ${imageName} : ${file}`);
 
-        image.name = imageName;
-        image.galleryName = galleryName;
-        image.galleryResourceGroup = galleryResourceGroup;
+        // const contents = await fs.readFile(file, 'utf8');
+        // const image = yaml.load(contents);
 
-        image.source = file.split('/image.y')[0];
-        image.path = image.source.split(`${workspace}/`)[1];
-        image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
+        // image.name = imageName;
+        // image.galleryName = galleryName;
+        // image.galleryResourceGroup = galleryResourceGroup;
 
-        image.locations = JSON.stringify(image.locations);
+        // image.source = file.split('/image.y')[0];
+        // image.path = image.source.split(`${workspace}/`)[1];
+        // image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
 
-        const useBuildGroup = image.buildResourceGroup && image.buildResourceGroup.length > 0;
+        // image.locations = JSON.stringify(image.locations);
 
-        image.tempResourceGroup = useBuildGroup ? '' : `${image.galleryName}-${image.name}-${context.runNumber}`;
+        // const useBuildGroup = image.buildResourceGroup && image.buildResourceGroup.length > 0;
 
-        image.resolvedResourceGroup = useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
+        // image.tempResourceGroup = useBuildGroup ? '' : `${image.galleryName}-${image.name}-${context.runNumber}`;
+
+        // image.resolvedResourceGroup = useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
 
         if (!image.version) {
             core.warning(`Skipping ${image.name} because of missing version information`);
@@ -78,7 +106,7 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
                 core.info(`Found existing image definition for ${image.name}`);
                 const img = JSON.parse(imgDefShow.stdout);
-                image.location = useBuildGroup ? '' : img.location;
+                image.location = image.useBuildGroup ? '' : img.location;
 
                 // image definition exists, check if the version already exists
 
@@ -145,7 +173,7 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
                     core.info(`Successfully created image definition for ${image.name}`);
                     const img = JSON.parse(imgDefCreate.stdout);
-                    image.location = useBuildGroup ? '' : img.location;
+                    image.location = image.useBuildGroup ? '' : img.location;
 
                 } else {
                     core.setFailed(`Failed to create image definition for ${image.name} \n ${imgDefCreate.stderr}`);
@@ -154,8 +182,6 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
             } else {
                 core.setFailed(`Failed to get image definition for ${image.name} \n ${imgDefShow.stderr}`);
             }
-
-
         }
 
         core.endGroup();
