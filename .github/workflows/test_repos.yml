@@ -77,7 +77,10 @@ jobs:
           packer validate \
             -var "branch=${{ github.ref }}" \
             -var "commit=${{ github.sha }}" \
-            -var "subscription=$(az account show --query 'id' -o tsv)"
+            -var "subscription=$(az account show --query 'id' -o tsv)" \
+            . # <== run in the current folder
+
+          exit $?
 
   #     - name: Build Image with Packer
   #       working-directory: ${{ matrix.source }}
