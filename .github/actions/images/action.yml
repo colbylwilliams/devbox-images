@@ -6,6 +6,10 @@ inputs:
     description: The GitHub token used to create an authenticated client
     default: ${{ github.token }}
     required: false
+  secrets:
+    description: foobar
+    default: ${{ toJson(secrets) }}
+    required: false
 outputs:
   matrix:
     description: 'JSON string with a build matrix for packer build'

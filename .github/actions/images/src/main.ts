@@ -8,6 +8,9 @@ import { Image } from './types';
 
 async function run(): Promise<void> {
 
+    const secrets = core.getInput('secrets');
+    core.info(secrets);
+
     const include: Image[] = [];
     const skipped: Image[] = [];
 

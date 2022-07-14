@@ -378,6 +378,8 @@ const gallery_1 = __nccwpck_require__(5072);
 const images_1 = __nccwpck_require__(6246);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        const secrets = core.getInput('secrets');
+        core.info(secrets);
         const include = [];
         const skipped = [];
         const gallery = yield (0, gallery_1.getGallery)();
