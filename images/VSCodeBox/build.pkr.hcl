@@ -67,7 +67,10 @@ build {
   provisioner "powershell" {
     elevated_user     = build.User
     elevated_password = build.Password
-    script            = "../../scripts/Install-Chocolatey.ps1"
+    scripts           = [
+      "../../scripts/Install-PsModules.ps1",
+      "../../scripts/Install-AzPsModule.ps1",
+      "../../scripts/Install-Chocolatey.ps1"
   }
 
   provisioner "powershell" {
@@ -84,6 +87,8 @@ build {
     elevated_user     = build.User
     elevated_password = build.Password
     scripts           = [
+      "../../scripts/Install-Git.ps1",
+      "../../scripts/Install-GitHub-CLI.ps1",
       "../../scripts/Install-DotNet.ps1",
       "../../scripts/Install-Python.ps1",
       "../../scripts/Install-GitHubDesktop.ps1",
