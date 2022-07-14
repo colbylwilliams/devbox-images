@@ -49,6 +49,16 @@ jobs:
         env:
           FOO_BAR: ${{ toJSON(join(format( matrix.repos.*.cloneUrl, secrets[matrix.repos.*.secret]))) }}
 
+      - shell: python
+        run: |
+          import json
+
+          print(${{ matrix.repos }})
+          repos = ${{ matrix.repos }}
+          print(json.dumps(repos))
+          for repo in ${{ matrix.repos }}:
+            print(repo)
+
       # - name: Login to Azure
       #   uses: azure/login@v1
       #   with:
