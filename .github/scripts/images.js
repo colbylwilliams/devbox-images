@@ -1,6 +1,83 @@
 const fs = require('fs/promises');
 const yaml = require('js-yaml');
 
+// 'https://github.com/microsoft/TeamCloud.git';
+// 'git@github.com:microsoft/TeamCloud.git'
+const parseGitHubUrl = (repo) => {
+
+    let url = repo.url;
+
+    url = url.replace('git@', 'https://').replace('github.com:', 'github.com/');
+
+    // remove .git extension
+    if (url.endsWith('.git'))
+        url = url.slice(0, url.length - 4);
+
+    const parts = url.split('/');
+    const index = parts.findIndex(p => p.includes('github.com'));
+
+    if (index === -1 || parts.length < index + 3)
+        console.error('Invalid GitHub Repository Url');
+
+    repo.url = url;
+    repo.org = parts[index + 1];
+    repo.repo = parts[index + 2];
+    repo.cloneUrl = url.replace('https://github.com', 'https://{0}@github.com') + '.git';
+};
+
+const parseDevOpsUrl = (repo) => {
+
+    let url = repo.url;
+
+    url = url.replace('git@ssh', 'https://').replace(':v3/', '/');
+
+    // remove .git extension
+    if (url.endsWith('.git'))
+        url = url.slice(0, url.length - 4);
+
+    const parts = url.split('/');
+    let index = parts.findIndex(p => p.includes('dev.azure.com') || p.includes('visualstudio.com'));
+
+    if (index === -1)
+        console.error('Invalid DevOps Repository Url');
+
+    const gitIndex = parts.indexOf('_git');
+
+    if (gitIndex !== -1) {
+        parts.splice(gitIndex, 1);
+    } else {
+        const last = parts[parts.length - 1];
+        url = url.replace(`/${last}`, `/_git/${last}`);
+    }
+
+    if (parts[index].includes('dev.azure.com'))
+        ++index;
+
+    if (parts.length < index + 3)
+        console.error('Invalid DevOps Repository Url');
+
+    repo.url = url;
+    repo.org = parts[index].replace('visualstudio.com', '');
+    repo.project = parts[index + 1];
+    repo.repo = parts[index + 2];
+    // repo.cloneUrl
+};
+
+const parseRepos = (image) => {
+    if (image.repos) {
+        const repos = [];
+
+        for (const i in image.repos) {
+            const repo = image.repos[i];
+            parseGitHubUrl(repo)
+            repos.push(repo);
+        }
+
+        image.repos = repos;
+    }
+};
+
+
 const getImage = async (core, context, file) => {
 
     const { galleryResourceGroup, galleryName } = process.env;
@@ -29,34 +106,17 @@ const getImage = async (core, context, file) => {
 
     image.resolvedResourceGroup = image.useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
 
-    if (image.repos) {
-
-        const repos = [];
-
-        for (const i in image.repos)
-            repos.push(image.repos[i]);
-
-        image.repos = repos;
-
-        for (const repo of image.repos) {
-            core.info(`Repo: ${repo.url}`);
-            core.info(`Repo: ${repo.secret}`);
-        }
-    }
+    parseRepos(image);
 
     return image;
-}
+};
 
 module.exports = async ({ github, context, core, glob, exec, }) => {
+    // core.info(JSON.stringify(context))
 
     const NOT_FOUND_CODE = 'Code: ResourceNotFound';
 
-    // const { galleryResourceGroup, galleryName } = process.env;
-    // const workspace = process.env.GITHUB_WORKSPACE;
-
     core.startGroup(`Checking for changed files`);
-
-    // core.info(JSON.stringify(context))
 
     const compare = await github.rest.repos.compareCommitsWithBasehead({
         owner: context.repo.owner,
@@ -83,10 +143,7 @@ module.exports = async ({ github, context, core, glob, exec, }) => {
 
         const image = await getImage(core, context, file);
 
-        // image.path = image.source.split(`${workspace}/`)[1];
         image.changed = changes.some(change => change.startsWith(image.path) || change.startsWith(`scripts/`));
-
-
 
         if (!image.version) {
             core.warning(`Skipping ${image.name} because of missing version information`);

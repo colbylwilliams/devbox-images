@@ -47,20 +47,24 @@ jobs:
           galleryName: ${{ steps.gallery-definitions.outputs.name }}
           galleryResourceGroup: ${{ steps.gallery-definitions.outputs.resourceGroup }}
 
-  # build:
-  #   needs: prepare
-  #   runs-on: ubuntu-latest
-  #   # continue-on-error: true
+  build:
+    needs: prepare
+    runs-on: ubuntu-latest
+    # continue-on-error: true
 
-  #   # this is needed to avoid workflow errors in case of an empty matrix
-  #   if: ${{ needs.prepare.outputs.build == 'true' }}
+    # this is needed to avoid workflow errors in case of an empty matrix
+    if: ${{ needs.prepare.outputs.build == 'true' }}
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
 
-  #   steps:
-  #     - uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: echo $FOO_BAR
+        env:
+          FOO_BAR: format( matrix.repos[0].cloneUrl, secrets[matrix.repos[0].secret])
 
   #     - name: Login to Azure
   #       uses: azure/login@v1
