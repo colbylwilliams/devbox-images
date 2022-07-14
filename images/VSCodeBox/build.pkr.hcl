@@ -71,6 +71,7 @@ build {
       "../../scripts/Install-PsModules.ps1",
       "../../scripts/Install-AzPsModule.ps1",
       "../../scripts/Install-Chocolatey.ps1"
+    ]
   }
 
   provisioner "powershell" {
