@@ -378,8 +378,6 @@ const gallery_1 = __nccwpck_require__(5072);
 const images_1 = __nccwpck_require__(6246);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const secrets = process.env.SECRETS;
-        core.info(secrets !== null && secrets !== void 0 ? secrets : 'nope');
         const include = [];
         const skipped = [];
         const gallery = yield (0, gallery_1.getGallery)();
@@ -543,11 +541,14 @@ const parseRepoUrl = (repo) => {
         core.setFailed(`Invalid repository url: ${repo.url}\nOnly GitHub and Azure DevOps git repositories are supported. Generic git repositories are not supported.`);
 };
 function parseRepos(image) {
+    const secrets = process.env.SECRETS;
     const repos = [];
     if (image.repos) {
         for (const i in image.repos) {
             const repo = image.repos[i];
             parseRepoUrl(repo);
+            const secret = secrets[repo.secret];
+            repo.cloneUrl.replace('{0}', secret);
             repos.push(repo);
         }
     }

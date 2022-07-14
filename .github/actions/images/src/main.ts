@@ -8,9 +8,6 @@ import { Image } from './types';
 
 async function run(): Promise<void> {
 
-    const secrets = process.env.SECRETS;
-    core.info(secrets ?? 'nope');
-
     const include: Image[] = [];
     const skipped: Image[] = [];
 

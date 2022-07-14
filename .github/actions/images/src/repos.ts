@@ -82,12 +82,19 @@ const parseRepoUrl = (repo: Repo) => {
 };
 
 export function parseRepos(image: Image) {
+
+    const secrets: any = process.env.SECRETS;
+
     const repos: Repo[] = [];
 
     if (image.repos) {
         for (const i in image.repos) {
             const repo = image.repos[i];
             parseRepoUrl(repo);
+
+            const secret = secrets[repo.secret];
+            repo.cloneUrl.replace('{0}', secret);
+
             repos.push(repo);
         }
     }
