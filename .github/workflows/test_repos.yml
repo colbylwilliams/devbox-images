@@ -56,8 +56,9 @@ jobs:
           for u in ${{env.REPOS}}:
             url = u['cloneUrl']
             secret = u['secret']
-            url = url.replace('{0}', '${{ secrets[secret] }}')
+
             print(url)
+            print(secret)
         env:
           REPOS: ${{ toJson(matrix.repos) }}
 
