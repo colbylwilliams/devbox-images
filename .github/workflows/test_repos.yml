@@ -52,7 +52,7 @@ jobs:
         run: |
           import json
 
-          variables = '${{ matrix.source }}/variables.pkrvars.json'
+          variables = '${{ matrix.source }}/vars.auto.pkrvars.json'
 
           matrix_json = '''${{ toJson(matrix) }}'''
 
@@ -69,6 +69,15 @@ jobs:
       - name: Init Packer
         working-directory: ${{ matrix.source }}
         run: packer init .
+
+      - name: Validate Packer Template
+        working-directory: ${{ matrix.source }}
+        run: |
+
+          packer validate \
+            -var "branch=${{ github.ref }}" \
+            -var "commit=${{ github.sha }}" \
+            -var "subscription=$(az account show --query 'id' -o tsv)"
 
   #     - name: Build Image with Packer
   #       working-directory: ${{ matrix.source }}
