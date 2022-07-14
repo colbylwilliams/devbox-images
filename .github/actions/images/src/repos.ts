@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 
-import { getKeyVaultSecret } from './azure';
+// import { getKeyVaultSecret } from './azure';
 import { Image, Repo } from './types';
 
 const isGitHubUrl = (url: string): boolean => url.toLowerCase().includes('github.com');
@@ -29,9 +29,9 @@ const parseGitHubUrl = async (repo: Repo) => {
     repo.org = parts[index + 1];
     repo.repo = parts[index + 2];
 
-    const secret = await getKeyVaultSecret(repo.secret) ?? '';
-
-    repo.cloneUrl = url.replace('https://github.com', `https://${secret}@github.com`) + '.git';
+    repo.cloneUrlTemplate = url.replace('https://github.com', 'https://{0}@github.com') + '.git';
+    // const secret = await getKeyVaultSecret(repo.secret) ?? '';
+    // repo.cloneUrl = url.replace('https://github.com', `https://${secret}@github.com`) + '.git';
 };
 
 // examples:

@@ -524,14 +524,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parseRepos = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const azure_1 = __nccwpck_require__(7926);
 const isGitHubUrl = (url) => url.toLowerCase().includes('github.com');
 const isDevOpsUrl = (url) => url.toLowerCase().includes('dev.azure.com') || url.toLowerCase().includes('visualstudio.com');
 // examples:
 // https://github.com/colbylwilliams/devbox-images.git
 // git@github.com:colbylwilliams/devbox-images.git
 const parseGitHubUrl = (repo) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     let url = repo.url;
     url = url.toLowerCase().replace('git@', 'https://').replace('github.com:', 'github.com/');
     // remove .git extension
@@ -544,8 +542,9 @@ const parseGitHubUrl = (repo) => __awaiter(void 0, void 0, void 0, function* () 
     repo.url = url;
     repo.org = parts[index + 1];
     repo.repo = parts[index + 2];
-    const secret = (_a = yield (0, azure_1.getKeyVaultSecret)(repo.secret)) !== null && _a !== void 0 ? _a : '';
-    repo.cloneUrl = url.replace('https://github.com', `https://${secret}@github.com`) + '.git';
+    repo.cloneUrlTemplate = url.replace('https://github.com', 'https://{0}@github.com') + '.git';
+    // const secret = await getKeyVaultSecret(repo.secret) ?? '';
+    // repo.cloneUrl = url.replace('https://github.com', `https://${secret}@github.com`) + '.git';
 });
 // examples:
 // https://dev.azure.com/colbylwilliams/MyProject/_git/devbox-images

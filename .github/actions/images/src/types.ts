@@ -4,6 +4,7 @@ export interface Repo {
     project?: string;
     repo: string;
     cloneUrl: string;
+    cloneUrlTemplate: string;
     secret: string;
 }
 
@@ -17,6 +18,8 @@ export interface Image {
     os: string;
 
     version: string;
+
+    identity: string;
 
     repos: Repo[];
 

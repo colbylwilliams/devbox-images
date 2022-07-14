@@ -86,6 +86,7 @@ jobs:
   #           -var "image=${{ matrix.name }}" \
   #           -var 'replicaLocations=${{ matrix.locations }}' \
   #           -var "location=${{ matrix.location }}" \
+  #           -var "identity=${{ matrix.identity }}" \
   #           -var "tempResourceGroup=${{ matrix.tempResourceGroup }}" \
   #           -var "buildResourceGroup=${{ matrix.buildResourceGroup }}" \
   #           -var "resolvedResourceGroup=${{ matrix.resolvedResourceGroup }}" \
