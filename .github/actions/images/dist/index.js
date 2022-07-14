@@ -39,10 +39,44 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.validateImageDefinitionAndVersion = void 0;
+exports.validateImageDefinitionAndVersion = exports.getKeyVaultSecret = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec = __importStar(__nccwpck_require__(1514));
-const NOT_FOUND_CODE = 'Code: ResourceNotFound';
+const RESOURCE_NOT_FOUND = 'Code: ResourceNotFound';
+const SECRET_NOT_FOUND = '(SecretNotFound)';
+const SECRET_FORBIDDEN = 'Caller is not authorized to perform action on resource.';
+function getKeyVaultSecret(id) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const secretShowCmd = [
+                'keyvault',
+                'secret',
+                'show',
+                '--id', id,
+            ];
+            core.info(`Getting secret from Key Vault: ${id}`);
+            const secretShow = yield exec.getExecOutput('az', secretShowCmd, { silent: true, ignoreReturnCode: true });
+            if (secretShow.exitCode === 0) {
+                const secret = JSON.parse(secretShow.stdout);
+                core.setSecret(secret.value);
+                return secret.value;
+            }
+            else if (secretShow.stderr.includes(SECRET_NOT_FOUND))
+                core.setFailed(`Key Vault secret ${id} not found`);
+            else if (secretShow.stderr.includes(SECRET_FORBIDDEN))
+                core.setFailed(`Service Principal used to login to Azure does not have permission to read Key Vault secret ${id}`);
+            else
+                core.setFailed(`Error getting secret from Key Vault: ${secretShow.stderr}`);
+        }
+        catch (error) {
+            if (error instanceof Error)
+                core.setFailed(error.message);
+        }
+        return undefined;
+    });
+}
+exports.getKeyVaultSecret = getKeyVaultSecret;
+;
 function validateImageDefinitionAndVersion(image) {
     return __awaiter(this, void 0, void 0, function* () {
         core.startGroup(`Validating image definition and version for ${image.name}`);
@@ -72,7 +106,7 @@ function validateImageDefinitionAndVersion(image) {
                 core.info(`Checking if image version ${image.version} already exists for ${image.name}`);
                 const imgVersionShow = yield exec.getExecOutput('az', imgVersionShowCmd, { silent: true, ignoreReturnCode: true });
                 if (imgVersionShow.exitCode !== 0) {
-                    if (imgVersionShow.stderr.includes(NOT_FOUND_CODE)) {
+                    if (imgVersionShow.stderr.includes(RESOURCE_NOT_FOUND)) {
                         // image version does not exist, add it to the list of images to create
                         core.info(`Image version ${image.version} does not exist for ${image.name}. Creating`);
                         // include.push(image);
@@ -93,7 +127,7 @@ function validateImageDefinitionAndVersion(image) {
                     core.info(`Image version ${image.version} already exists for ${image.name} and image definition is unchanged. Skipping`);
                 }
             }
-            else if (imgDefShow.stderr.includes(NOT_FOUND_CODE)) {
+            else if (imgDefShow.stderr.includes(RESOURCE_NOT_FOUND)) {
                 // image definition does not exist, create it and skip the version check
                 core.info(`Image definition for ${image.name} does not exist in gallery ${image.gallery.name}`);
                 const imgDefCreateCmd = [
@@ -478,15 +512,26 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parseRepos = void 0;
 const core = __importStar(__nccwpck_require__(2186));
+const azure_1 = __nccwpck_require__(7926);
 const isGitHubUrl = (url) => url.toLowerCase().includes('github.com');
 const isDevOpsUrl = (url) => url.toLowerCase().includes('dev.azure.com') || url.toLowerCase().includes('visualstudio.com');
 // examples:
 // https://github.com/colbylwilliams/devbox-images.git
 // git@github.com:colbylwilliams/devbox-images.git
-const parseGitHubUrl = (repo) => {
+const parseGitHubUrl = (repo) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     let url = repo.url;
     url = url.toLowerCase().replace('git@', 'https://').replace('github.com:', 'github.com/');
     // remove .git extension
@@ -499,8 +544,9 @@ const parseGitHubUrl = (repo) => {
     repo.url = url;
     repo.org = parts[index + 1];
     repo.repo = parts[index + 2];
-    repo.cloneUrl = url.replace('https://github.com', 'https://{0}@github.com') + '.git';
-};
+    const secret = (_a = yield (0, azure_1.getKeyVaultSecret)(repo.secret)) !== null && _a !== void 0 ? _a : '';
+    repo.cloneUrl = url.replace('https://github.com', `https://${secret}@github.com`) + '.git';
+});
 // examples:
 // https://dev.azure.com/colbylwilliams/MyProject/_git/devbox-images
 // https://colbylwilliams.visualstudio.com/DefaultCollection/MyProject/_git/devbox-images
@@ -532,31 +578,26 @@ const parseDevOpsUrl = (repo) => {
     repo.repo = parts[index + 2];
     // repo.cloneUrl
 };
-const parseRepoUrl = (repo) => {
+const parseRepoUrl = (repo) => __awaiter(void 0, void 0, void 0, function* () {
     if (isGitHubUrl(repo.url))
-        parseGitHubUrl(repo);
+        yield parseGitHubUrl(repo);
     else if (isDevOpsUrl(repo.url))
         parseDevOpsUrl(repo);
     else
         core.setFailed(`Invalid repository url: ${repo.url}\nOnly GitHub and Azure DevOps git repositories are supported. Generic git repositories are not supported.`);
-};
+});
 function parseRepos(image) {
-    const secrets = process.env.SECRETS;
-    core.info(`Parsing secrets: ${secrets}`);
-    core.info(`Parsing secrets json: ${JSON.stringify(secrets)}`);
-    const repos = [];
-    if (image.repos) {
-        for (const i in image.repos) {
-            const repo = image.repos[i];
-            parseRepoUrl(repo);
-            const secret = secrets[repo.secret];
-            core.info(`Using secret: ${secret}`);
-            repo.cloneUrl = repo.cloneUrl.replace('{0}', secret);
-            core.info(`Clone url: ${repo.cloneUrl}`);
-            repos.push(repo);
+    return __awaiter(this, void 0, void 0, function* () {
+        const repos = [];
+        if (image.repos) {
+            for (const i in image.repos) {
+                const repo = image.repos[i];
+                yield parseRepoUrl(repo);
+                repos.push(repo);
+            }
         }
-    }
-    image.repos = repos;
+        image.repos = repos;
+    });
 }
 exports.parseRepos = parseRepos;
 ;

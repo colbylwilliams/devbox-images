@@ -2,7 +2,43 @@ import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import { Image } from './types';
 
-const NOT_FOUND_CODE = 'Code: ResourceNotFound';
+const RESOURCE_NOT_FOUND = 'Code: ResourceNotFound';
+const SECRET_NOT_FOUND = '(SecretNotFound)';
+const SECRET_FORBIDDEN = 'Caller is not authorized to perform action on resource.';
+
+export async function getKeyVaultSecret(id: string): Promise<string | undefined> {
+
+    try {
+
+        const secretShowCmd = [
+            'keyvault',
+            'secret',
+            'show',
+            '--id', id,
+        ];
+
+        core.info(`Getting secret from Key Vault: ${id}`);
+        const secretShow = await exec.getExecOutput('az', secretShowCmd, { silent: true, ignoreReturnCode: true });
+
+        if (secretShow.exitCode === 0) {
+
+            const secret = JSON.parse(secretShow.stdout);
+            core.setSecret(secret.value);
+            return secret.value;
+
+        } else if (secretShow.stderr.includes(SECRET_NOT_FOUND))
+            core.setFailed(`Key Vault secret ${id} not found`);
+        else if (secretShow.stderr.includes(SECRET_FORBIDDEN))
+            core.setFailed(`Service Principal used to login to Azure does not have permission to read Key Vault secret ${id}`);
+        else
+            core.setFailed(`Error getting secret from Key Vault: ${secretShow.stderr}`);
+
+    } catch (error) {
+        if (error instanceof Error) core.setFailed(error.message);
+    }
+
+    return undefined;
+};
 
 export async function validateImageDefinitionAndVersion(image: Image): Promise<boolean> {
 
@@ -41,7 +77,7 @@ export async function validateImageDefinitionAndVersion(image: Image): Promise<b
             const imgVersionShow = await exec.getExecOutput('az', imgVersionShowCmd, { silent: true, ignoreReturnCode: true });
 
             if (imgVersionShow.exitCode !== 0) {
-                if (imgVersionShow.stderr.includes(NOT_FOUND_CODE)) {
+                if (imgVersionShow.stderr.includes(RESOURCE_NOT_FOUND)) {
 
                     // image version does not exist, add it to the list of images to create
                     core.info(`Image version ${image.version} does not exist for ${image.name}. Creating`);
@@ -66,7 +102,7 @@ export async function validateImageDefinitionAndVersion(image: Image): Promise<b
                 core.info(`Image version ${image.version} already exists for ${image.name} and image definition is unchanged. Skipping`);
             }
 
-        } else if (imgDefShow.stderr.includes(NOT_FOUND_CODE)) {
+        } else if (imgDefShow.stderr.includes(RESOURCE_NOT_FOUND)) {
 
             // image definition does not exist, create it and skip the version check
 

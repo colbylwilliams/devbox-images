@@ -9,6 +9,6 @@ locations:
   - westeurope
 repos:
   - url: https://github.com/colbylwilliams/devbox-images
-    secret: TOKEN_AA
+    secret: https://contosogallery.vault.azure.net/secrets/repo-aa
   - url: https://github.com/colbylwilliams/az-util
-    secret: TOKEN_BB
+    secret: https://contosogallery.vault.azure.net/secrets/repo-bb

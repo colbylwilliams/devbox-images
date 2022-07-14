@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 
+import { getKeyVaultSecret } from './azure';
 import { Image, Repo } from './types';
 
 const isGitHubUrl = (url: string): boolean => url.toLowerCase().includes('github.com');
@@ -8,7 +9,7 @@ const isDevOpsUrl = (url: string): boolean => url.toLowerCase().includes('dev.az
 // examples:
 // https://github.com/colbylwilliams/devbox-images.git
 // git@github.com:colbylwilliams/devbox-images.git
-const parseGitHubUrl = (repo: Repo) => {
+const parseGitHubUrl = async (repo: Repo) => {
 
     let url = repo.url;
 
@@ -27,7 +28,10 @@ const parseGitHubUrl = (repo: Repo) => {
     repo.url = url;
     repo.org = parts[index + 1];
     repo.repo = parts[index + 2];
-    repo.cloneUrl = url.replace('https://github.com', 'https://{0}@github.com') + '.git';
+
+    const secret = await getKeyVaultSecret(repo.secret) ?? '';
+
+    repo.cloneUrl = url.replace('https://github.com', `https://${secret}@github.com`) + '.git';
 };
 
 // examples:
@@ -72,35 +76,23 @@ const parseDevOpsUrl = (repo: Repo) => {
     // repo.cloneUrl
 };
 
-const parseRepoUrl = (repo: Repo) => {
+const parseRepoUrl = async (repo: Repo) => {
     if (isGitHubUrl(repo.url))
-        parseGitHubUrl(repo);
+        await parseGitHubUrl(repo);
     else if (isDevOpsUrl(repo.url))
         parseDevOpsUrl(repo);
     else
         core.setFailed(`Invalid repository url: ${repo.url}\nOnly GitHub and Azure DevOps git repositories are supported. Generic git repositories are not supported.`);
 };
 
-export function parseRepos(image: Image) {
-
-    const secrets: any = process.env.SECRETS;
-
-    core.info(`Parsing secrets: ${secrets}`);
-
-    core.info(`Parsing secrets json: ${JSON.stringify(secrets)}`);
+export async function parseRepos(image: Image) {
 
     const repos: Repo[] = [];
 
     if (image.repos) {
         for (const i in image.repos) {
             const repo = image.repos[i];
-            parseRepoUrl(repo);
-
-            const secret = secrets[repo.secret];
-            core.info(`Using secret: ${secret}`);
-            repo.cloneUrl = repo.cloneUrl.replace('{0}', secret);
-            core.info(`Clone url: ${repo.cloneUrl}`);
-
+            await parseRepoUrl(repo);
             repos.push(repo);
         }
     }
