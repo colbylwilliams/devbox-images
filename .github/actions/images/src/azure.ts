@@ -48,8 +48,8 @@ export async function validateImageDefinitionAndVersion(image: Image): Promise<b
         const imgDefShowCmd = [
             'sig', 'image-definition', 'show',
             '--only-show-errors',
-            '-g', image.gallery.resourceGroup,
-            '-r', image.gallery.name,
+            '-g', image.galleryResourceGroup,
+            '-r', image.galleryName,
             '-i', image.name
         ];
 
@@ -67,8 +67,8 @@ export async function validateImageDefinitionAndVersion(image: Image): Promise<b
             const imgVersionShowCmd = [
                 'sig', 'image-version', 'show',
                 '--only-show-errors',
-                '-g', image.gallery.resourceGroup,
-                '-r', image.gallery.name,
+                '-g', image.galleryResourceGroup,
+                '-r', image.galleryName,
                 '-i', image.name,
                 '-e', image.version
             ];
@@ -106,13 +106,13 @@ export async function validateImageDefinitionAndVersion(image: Image): Promise<b
 
             // image definition does not exist, create it and skip the version check
 
-            core.info(`Image definition for ${image.name} does not exist in gallery ${image.gallery.name}`);
+            core.info(`Image definition for ${image.name} does not exist in gallery ${image.galleryName}`);
 
             const imgDefCreateCmd = [
                 'sig', 'image-definition', 'create',
                 '--only-show-errors',
-                '-g', image.gallery.resourceGroup,
-                '-r', image.gallery.name,
+                '-g', image.galleryResourceGroup,
+                '-r', image.galleryName,
                 '-i', image.name,
                 '-p', image.publisher,
                 '-f', image.offer,

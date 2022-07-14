@@ -23,10 +23,10 @@ export interface Image {
 
     repos: Repo[];
 
-    // galleryResourceGroup: string;
-    // galleryName: string;
+    galleryResourceGroup: string;
+    galleryName: string;
 
-    gallery: Gallery;
+    // gallery: Gallery;
 
     source: string;
     path: string;

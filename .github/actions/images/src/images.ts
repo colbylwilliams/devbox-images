@@ -20,7 +20,8 @@ const parseImage = async (gallery: Gallery, file: string): Promise<Image> => {
     const image = yaml.load(contents) as Image;
 
     image.name = imageName;
-    image.gallery = gallery;
+    image.galleryName = gallery.name;
+    image.galleryResourceGroup = gallery.resourceGroup;
 
     image.source = file.split('/image.y')[0]; // ex: /home/runner/work/devbox-images/devbox-images/images/VSCodeBox
     image.path = image.source.split(`${workspace}/`)[1]; // ex: images/VSCodeBox/image.yml
@@ -29,7 +30,7 @@ const parseImage = async (gallery: Gallery, file: string): Promise<Image> => {
 
     image.useBuildGroup = !!image.buildResourceGroup && image.buildResourceGroup.length > 0;
 
-    image.tempResourceGroup = image.useBuildGroup ? '' : `${image.gallery.name}-${image.name}-${github.context.runNumber}`;
+    image.tempResourceGroup = image.useBuildGroup ? '' : `${image.galleryName}-${image.name}-${github.context.runNumber}`;
 
     image.resolvedResourceGroup = image.useBuildGroup ? image.buildResourceGroup! : image.tempResourceGroup!;
 

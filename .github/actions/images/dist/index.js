@@ -84,8 +84,8 @@ function validateImageDefinitionAndVersion(image) {
             const imgDefShowCmd = [
                 'sig', 'image-definition', 'show',
                 '--only-show-errors',
-                '-g', image.gallery.resourceGroup,
-                '-r', image.gallery.name,
+                '-g', image.galleryResourceGroup,
+                '-r', image.galleryName,
                 '-i', image.name
             ];
             core.info(`Checking if image definition exists for ${image.name}`);
@@ -98,8 +98,8 @@ function validateImageDefinitionAndVersion(image) {
                 const imgVersionShowCmd = [
                     'sig', 'image-version', 'show',
                     '--only-show-errors',
-                    '-g', image.gallery.resourceGroup,
-                    '-r', image.gallery.name,
+                    '-g', image.galleryResourceGroup,
+                    '-r', image.galleryName,
                     '-i', image.name,
                     '-e', image.version
                 ];
@@ -129,12 +129,12 @@ function validateImageDefinitionAndVersion(image) {
             }
             else if (imgDefShow.stderr.includes(RESOURCE_NOT_FOUND)) {
                 // image definition does not exist, create it and skip the version check
-                core.info(`Image definition for ${image.name} does not exist in gallery ${image.gallery.name}`);
+                core.info(`Image definition for ${image.name} does not exist in gallery ${image.galleryName}`);
                 const imgDefCreateCmd = [
                     'sig', 'image-definition', 'create',
                     '--only-show-errors',
-                    '-g', image.gallery.resourceGroup,
-                    '-r', image.gallery.name,
+                    '-g', image.galleryResourceGroup,
+                    '-r', image.galleryName,
                     '-i', image.name,
                     '-p', image.publisher,
                     '-f', image.offer,
@@ -307,12 +307,13 @@ const parseImage = (gallery, file) => __awaiter(void 0, void 0, void 0, function
     const contents = yield fs.readFile(file, 'utf8');
     const image = yaml.load(contents);
     image.name = imageName;
-    image.gallery = gallery;
+    image.galleryName = gallery.name;
+    image.galleryResourceGroup = gallery.resourceGroup;
     image.source = file.split('/image.y')[0]; // ex: /home/runner/work/devbox-images/devbox-images/images/VSCodeBox
     image.path = image.source.split(`${workspace}/`)[1]; // ex: images/VSCodeBox/image.yml
     image.locations = JSON.stringify(image.locations);
     image.useBuildGroup = !!image.buildResourceGroup && image.buildResourceGroup.length > 0;
-    image.tempResourceGroup = image.useBuildGroup ? '' : `${image.gallery.name}-${image.name}-${github.context.runNumber}`;
+    image.tempResourceGroup = image.useBuildGroup ? '' : `${image.galleryName}-${image.name}-${github.context.runNumber}`;
     image.resolvedResourceGroup = image.useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
     (0, repos_1.parseRepos)(image);
     core.endGroup();

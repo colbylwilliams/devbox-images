@@ -54,15 +54,19 @@ jobs:
 
       - shell: python
         run: |
-          urls = []
-          for u in ${{env.REPOS}}:
-            url = u['cloneUrlTemplate']
-            secret = u['secret']
+          import json
 
-            print(url)
-            print(secret)
-        env:
-          REPOS: ${{ toJson(matrix.repos) }}
+          variables = '${{ matrix.source }}/variables.pkrvars.json'
+          print(variables)
+
+          image = json.loads(${{ toJson(matrix.repos) }})
+          print (json.dumps(image))
+          print (image)
+
+          with open(variables, 'w') as f:
+            json.dump(image, f, ensure_ascii=False, indent=4, sort_keys=True)
+
+      - run: cat '${{ matrix.source }}/variables.pkrvars.json'
 
       # - name: Login to Azure
       #   uses: azure/login@v1
