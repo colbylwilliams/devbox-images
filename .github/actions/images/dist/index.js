@@ -541,15 +541,20 @@ const parseRepoUrl = (repo) => {
         core.setFailed(`Invalid repository url: ${repo.url}\nOnly GitHub and Azure DevOps git repositories are supported. Generic git repositories are not supported.`);
 };
 function parseRepos(image) {
-    const repos = [];
+    // const repos: Repo[] = [];
     if (image.repos) {
-        for (const i in image.repos) {
-            const repo = image.repos[i];
+        for (const repo of image.repos) {
+            // const repo = image.repos[i];
+            core.info(`- Repository: ${repo.cloneUrl}`);
             parseRepoUrl(repo);
-            repos.push(repo);
+            core.info(`+ Repository: ${repo.cloneUrl}`);
+            // repos.push(repo);
         }
     }
-    image.repos = repos;
+    for (const repo of image.repos) {
+        core.info(`Repository: ${repo.cloneUrl}`);
+    }
+    // image.repos = repos;
 }
 exports.parseRepos = parseRepos;
 ;

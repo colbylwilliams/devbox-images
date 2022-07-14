@@ -45,15 +45,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - run: echo $FOO_BAR
-        env:
-          FOO_BAR: ${{ toJSON(join(format( matrix.repos.*.cloneUrl, secrets[matrix.repos.*.secret]))) }}
+      # - run: echo $FOO_BAR
+      #   env:
+      #     FOO_BAR: ${{ toJSON(join(format( matrix.repos.*.cloneUrl, secrets[matrix.repos.*.secret]))) }}
 
       - shell: python
         run: |
           import json
 
-          print(${{ matrix.repos }})
           repos = ${{ matrix.repos }}
           print(json.dumps(repos))
           for repo in ${{ matrix.repos }}:
