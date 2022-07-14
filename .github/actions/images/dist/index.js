@@ -280,6 +280,8 @@ const parseImage = (gallery, file) => __awaiter(void 0, void 0, void 0, function
     image.useBuildGroup = !!image.buildResourceGroup && image.buildResourceGroup.length > 0;
     image.tempResourceGroup = image.useBuildGroup ? '' : `${image.gallery.name}-${image.name}-${github.context.runNumber}`;
     image.resolvedResourceGroup = image.useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
+    core.info(`Image repos: ${image.repos}`);
+    core.info(`Image repos: ${JSON.stringify(image.repos)}`);
     (0, repos_1.parseRepos)(image);
     core.endGroup();
     return image;
@@ -541,20 +543,20 @@ const parseRepoUrl = (repo) => {
         core.setFailed(`Invalid repository url: ${repo.url}\nOnly GitHub and Azure DevOps git repositories are supported. Generic git repositories are not supported.`);
 };
 function parseRepos(image) {
-    // const repos: Repo[] = [];
+    const repos = [];
     if (image.repos) {
-        for (const repo of image.repos) {
-            // const repo = image.repos[i];
+        for (const i in image.repos) {
+            const repo = image.repos[i];
             core.info(`- Repository: ${repo.cloneUrl}`);
             parseRepoUrl(repo);
             core.info(`+ Repository: ${repo.cloneUrl}`);
-            // repos.push(repo);
+            repos.push(repo);
         }
     }
-    for (const repo of image.repos) {
+    for (const repo of repos) {
         core.info(`Repository: ${repo.cloneUrl}`);
     }
-    // image.repos = repos;
+    image.repos = repos;
 }
 exports.parseRepos = parseRepos;
 ;

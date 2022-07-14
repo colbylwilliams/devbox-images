@@ -82,21 +82,21 @@ const parseRepoUrl = (repo: Repo) => {
 };
 
 export function parseRepos(image: Image) {
-    // const repos: Repo[] = [];
+    const repos: Repo[] = [];
 
     if (image.repos) {
-        for (const repo of image.repos) {
-            // const repo = image.repos[i];
+        for (const i in image.repos) {
+            const repo = image.repos[i];
             core.info(`- Repository: ${repo.cloneUrl}`);
             parseRepoUrl(repo);
             core.info(`+ Repository: ${repo.cloneUrl}`);
-            // repos.push(repo);
+            repos.push(repo);
         }
     }
 
-    for (const repo of image.repos) {
+    for (const repo of repos) {
         core.info(`Repository: ${repo.cloneUrl}`);
     }
 
-    // image.repos = repos;
+    image.repos = repos;
 };
