@@ -542,6 +542,8 @@ const parseRepoUrl = (repo) => {
 };
 function parseRepos(image) {
     const secrets = process.env.SECRETS;
+    core.info(`Parsing secrets: ${secrets}`);
+    core.info(`Parsing secrets json: ${JSON.stringify(secrets)}`);
     const repos = [];
     if (image.repos) {
         for (const i in image.repos) {

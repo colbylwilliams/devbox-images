@@ -85,6 +85,10 @@ export function parseRepos(image: Image) {
 
     const secrets: any = process.env.SECRETS;
 
+    core.info(`Parsing secrets: ${secrets}`);
+
+    core.info(`Parsing secrets json: ${JSON.stringify(secrets)}`);
+
     const repos: Repo[] = [];
 
     if (image.repos) {
