@@ -24,12 +24,12 @@ source "azure-arm" "vm" {
   image_sku                         = "win11-21h2-ent-cpc-m365"
   image_version                     = "latest"
   use_azure_cli_auth                = true
-  managed_image_name                = var.image
+  managed_image_name                = var.name
   managed_image_resource_group_name = var.galleryResourceGroup
   location                          = var.location
   temp_resource_group_name          = var.tempResourceGroup
   build_resource_group_name         = var.buildResourceGroup
-  user_assigned_managed_identities  = [var.identity]
+  user_assigned_managed_identities  = var.identities
   async_resourcegroup_delete        = true
   os_type                           = "Windows"
   vm_size                           = "Standard_D8s_v3"
@@ -37,7 +37,7 @@ source "azure-arm" "vm" {
     subscription         = var.subscription
     resource_group       = var.galleryResourceGroup
     gallery_name         = var.galleryName
-    image_name           = var.image
+    image_name           = var.name
     image_version        = var.version
     replication_regions  = var.replicaLocations
     storage_account_type = "Standard_LRS"

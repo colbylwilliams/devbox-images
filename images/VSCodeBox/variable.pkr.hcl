@@ -22,7 +22,7 @@ variable "galleryResourceGroup" {
   description = "The resource group to use for the managed image"
 }
 
-variable "image" {
+variable "name" {
   type    = string
   default = ""
   description = "The name of the image to use for the build"
@@ -70,8 +70,10 @@ variable "version" {
   description = "The version to use for the build"
 }
 
-variable "identity" {
-  type    = string
-  default = "/subscriptions/e5f715ae-6c72-4a5c-87c8-495590c34828/resourcegroups/Compute-Gallery/providers/Microsoft.ManagedIdentity/userAssignedIdentities/Contoso-Packer"
-  description = "Fully-qualified resource ID of user assigned managed identity to be configured on the VM"
+variable "identities" {
+  type    = list(string)
+  default = [
+    "/subscriptions/e5f715ae-6c72-4a5c-87c8-495590c34828/resourcegroups/Compute-Gallery/providers/Microsoft.ManagedIdentity/userAssignedIdentities/Contoso-Packer"
+  ]
+  description = "One or more fully-qualified resource IDs of user assigned managed identities to be configured on the VM"
 }

@@ -70,8 +70,10 @@ variable "version" {
   description = "The version to use for the build"
 }
 
-variable "identity" {
-  type    = string
-  default = ""
-  description = "Fully-qualified resource ID of user assigned managed identity to be configured on the VM"
+variable "identities" {
+  type    = list(string)
+    default = [
+    "/subscriptions/e5f715ae-6c72-4a5c-87c8-495590c34828/resourcegroups/Compute-Gallery/providers/Microsoft.ManagedIdentity/userAssignedIdentities/Contoso-Packer"
+  ]
+  description = "One or more fully-qualified resource IDs of user assigned managed identities to be configured on the VM"
 }

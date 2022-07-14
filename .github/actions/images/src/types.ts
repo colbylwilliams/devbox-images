@@ -19,8 +19,6 @@ export interface Image {
 
     version: string;
 
-    identity: string;
-
     repos: Repo[];
 
     galleryResourceGroup: string;
