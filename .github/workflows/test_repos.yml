@@ -59,7 +59,7 @@ jobs:
           variables = '${{ matrix.source }}/variables.pkrvars.json'
           print(variables)
 
-          image = json.loads(${{ toJson(matrix.repos) }})
+          image = json.loads('${{ toJson(matrix) }}')
           print (json.dumps(image))
           print (image)
 
