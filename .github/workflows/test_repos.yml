@@ -56,7 +56,7 @@ jobs:
         run: |
           urls = []
           for u in ${{env.REPOS}}:
-            url = u['cloneUrl']
+            url = u['cloneUrlTemplate']
             secret = u['secret']
 
             print(url)
