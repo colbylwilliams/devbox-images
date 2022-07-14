@@ -54,8 +54,8 @@ jobs:
         run: |
           import json
 
-          repos = json.loads('${{env.REPOS}}')
-          for u in repos:
+
+          for u in ${{env.REPOS}}:
             print(u)
         env:
           REPOS: ${{ toJson(matrix.repos) }}
