@@ -281,7 +281,6 @@ const parseImage = (gallery, file) => __awaiter(void 0, void 0, void 0, function
     image.tempResourceGroup = image.useBuildGroup ? '' : `${image.gallery.name}-${image.name}-${github.context.runNumber}`;
     image.resolvedResourceGroup = image.useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
     (0, repos_1.parseRepos)(image);
-    core.info(`Image repos: ${JSON.stringify(image.repos)}`);
     core.endGroup();
     return image;
 });
