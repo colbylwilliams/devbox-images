@@ -53,9 +53,12 @@ jobs:
       - shell: python
         run: |
           import json
-
-          for u in ${{ matrix.repos.*.cloneUrl }}:
+          print(${{env.REPOS}})
+          repos = json.loads(${{env.REPOS}})
+          for u in repos:
             print(u)
+        env:
+          REPOS: ${{ toJson(matrix.repos) }}
 
       # - name: Login to Azure
       #   uses: azure/login@v1
