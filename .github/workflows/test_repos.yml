@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      build: ${{ steps.packer-definitions.outputs.build }}
-      matrix: ${{ steps.packer-definitions.outputs.matrix }}
+      build: ${{ steps.images.outputs.build }}
+      matrix: ${{ steps.images.outputs.matrix }}
 
     steps:
       - uses: actions/checkout@v2
@@ -26,26 +26,30 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - run: npm install js-yaml
-
-      - name: Get Gallery Definition
-        id: gallery-definitions
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const script = require('./.github/scripts/gallery.js');
-            await script({github, context, core, glob, exec});
-
       - name: Get Image Definitions
-        id: packer-definitions
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const script = require('./.github/scripts/images.js');
-            await script({github, context, core, glob, exec});
-        env:
-          galleryName: ${{ steps.gallery-definitions.outputs.name }}
-          galleryResourceGroup: ${{ steps.gallery-definitions.outputs.resourceGroup }}
+        id: images
+        uses: ./.github/actions/images
+
+      # - run: npm install js-yaml
+
+      # - name: Get Gallery Definition
+      #   id: gallery-definitions
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       const script = require('./.github/scripts/gallery.js');
+      #       await script({github, context, core, glob, exec});
+
+      # - name: Get Image Definitions
+      #   id: packer-definitions
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       const script = require('./.github/scripts/images.js');
+      #       await script({github, context, core, glob, exec});
+      #   env:
+      #     galleryName: ${{ steps.gallery-definitions.outputs.name }}
+      #     galleryResourceGroup: ${{ steps.gallery-definitions.outputs.resourceGroup }}
 
   build:
     needs: prepare
