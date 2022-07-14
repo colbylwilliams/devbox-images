@@ -69,3 +69,9 @@ variable "version" {
   default = ""
   description = "The version to use for the build"
 }
+
+variable "identity" {
+  type    = string
+  default = ""
+  description = "Fully-qualified resource ID of user assigned managed identity to be configured on the VM"
+}

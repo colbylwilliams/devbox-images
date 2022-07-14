@@ -7,6 +7,7 @@ os: Windows
 locations:
   - eastus
   - westeurope
+identity: /subscriptions/e5f715ae-6c72-4a5c-87c8-495590c34828/resourcegroups/Compute-Gallery/providers/Microsoft.ManagedIdentity/userAssignedIdentities/Contoso-Packer
 repos:
   - url: https://github.com/colbylwilliams/devbox-images
     secret: https://contosogallery.vault.azure.net/secrets/repo-aa

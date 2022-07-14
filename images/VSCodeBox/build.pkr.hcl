@@ -29,6 +29,7 @@ source "azure-arm" "vm" {
   location                          = var.location
   temp_resource_group_name          = var.tempResourceGroup
   build_resource_group_name         = var.buildResourceGroup
+  user_assigned_managed_identities  = [var.identity]
   async_resourcegroup_delete        = true
   os_type                           = "Windows"
   vm_size                           = "Standard_D8s_v3"
