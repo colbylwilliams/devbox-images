@@ -93,7 +93,9 @@ export function parseRepos(image: Image) {
             parseRepoUrl(repo);
 
             const secret = secrets[repo.secret];
-            repo.cloneUrl.replace('{0}', secret);
+            core.info(`Using secret: ${secret}`);
+            repo.cloneUrl = repo.cloneUrl.replace('{0}', secret);
+            core.info(`Clone url: ${repo.cloneUrl}`);
 
             repos.push(repo);
         }
