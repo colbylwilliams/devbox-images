@@ -56,10 +56,12 @@ jobs:
 
           repos = json.loads('''${{env.REPOS}}''')
           for u in repos:
-            print(u.cloneUrl)
+            print(u)
+            print(u['cloneUrl'])
 
 
           for u in ${{env.REPOS}}:
+            print(u)
             print(u['cloneUrl'])
         env:
           REPOS: ${{ toJson(matrix.repos) }}
