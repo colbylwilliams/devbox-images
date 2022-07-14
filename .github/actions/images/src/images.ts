@@ -33,11 +33,9 @@ const parseImage = async (gallery: Gallery, file: string): Promise<Image> => {
 
     image.resolvedResourceGroup = image.useBuildGroup ? image.buildResourceGroup! : image.tempResourceGroup!;
 
-    core.info(`Image repos: ${image.repos}`);
-    core.info(`Image repos: ${JSON.stringify(image.repos)}`);
-
-
     parseRepos(image);
+
+    core.info(`Image repos: ${JSON.stringify(image.repos)}`);
 
     core.endGroup();
 

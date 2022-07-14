@@ -87,15 +87,9 @@ export function parseRepos(image: Image) {
     if (image.repos) {
         for (const i in image.repos) {
             const repo = image.repos[i];
-            core.info(`- Repository: ${repo.cloneUrl}`);
             parseRepoUrl(repo);
-            core.info(`+ Repository: ${repo.cloneUrl}`);
             repos.push(repo);
         }
-    }
-
-    for (const repo of repos) {
-        core.info(`Repository: ${repo.cloneUrl}`);
     }
 
     image.repos = repos;
