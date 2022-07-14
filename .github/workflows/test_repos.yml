@@ -47,12 +47,12 @@ jobs:
 
       - run: echo $FOO_BAR
         env:
-          FOO_BAR: ${{ join(format( matrix.repos.*.cloneUrl, secrets[matrix.repos.*.secret])) }}
+          FOO_BAR: ${{ toJSON(join(format( matrix.repos.*.cloneUrl, secrets[matrix.repos.*.secret]))) }}
 
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # - name: Login to Azure
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
   #     - name: Init Packer
   #       working-directory: ${{ matrix.source }}
