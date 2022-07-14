@@ -8,7 +8,7 @@ $modules = @(
     # "PSWindowsUpdate",
     # "SqlServer",
     # "VSSetup",
-    "Microsoft.Graph",
+    "Microsoft.Graph"
 )
 
 # Set TLS1.2
