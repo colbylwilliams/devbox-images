@@ -12,5 +12,5 @@
 #     $null = New-Item -Path $installPSModulePath -ItemType Directory
 # }
 
-Write-Host "Installing AZ to the ${installPSModulePath} path..."
+Write-Host "Installing AZ PowerShell module..."
 Install-Module -Name Az -Scope AllUsers -SkipPublisherCheck -Force
