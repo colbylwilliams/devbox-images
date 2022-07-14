@@ -54,7 +54,7 @@ jobs:
         run: |
           import json
 
-          repos = json.loads('${{env.REPOS}}'')
+          repos = json.loads('${{env.REPOS}}')
           for u in repos:
             print(u)
         env:
