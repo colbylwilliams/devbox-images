@@ -72,6 +72,6 @@ variable "version" {
 
 variable "identity" {
   type    = string
-  default = ""
+  default = "/subscriptions/e5f715ae-6c72-4a5c-87c8-495590c34828/resourcegroups/Compute-Gallery/providers/Microsoft.ManagedIdentity/userAssignedIdentities/Contoso-Packer"
   description = "Fully-qualified resource ID of user assigned managed identity to be configured on the VM"
 }
