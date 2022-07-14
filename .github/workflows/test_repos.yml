@@ -52,17 +52,12 @@ jobs:
 
       - shell: python
         run: |
-          import json
-
-          repos = json.loads('''${{env.REPOS}}''')
-          for u in repos:
-            print(u)
-            print(u['cloneUrl'])
-
-
+          urls = []
           for u in ${{env.REPOS}}:
-            print(u)
-            print(u['cloneUrl'])
+            url = u['cloneUrl']
+            secret = u['secret']
+            url = url.replace('{0}', '${{ secrets[secret] }}')
+            print(url)
         env:
           REPOS: ${{ toJson(matrix.repos) }}
 
