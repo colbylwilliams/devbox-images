@@ -64,7 +64,7 @@ jobs:
 
       - run: echo $FOO_BAR
         env:
-          FOO_BAR: format( matrix.repos[0].cloneUrl, secrets[matrix.repos[0].secret])
+          FOO_BAR: ${{ format( matrix.repos[0].cloneUrl, secrets[matrix.repos[0].secret]) }}
 
   #     - name: Login to Azure
   #       uses: azure/login@v1
