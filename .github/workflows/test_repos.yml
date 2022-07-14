@@ -29,6 +29,8 @@ jobs:
       - name: Get Image Definitions
         id: images
         uses: ./.github/actions/images
+        env:
+          SECRETS: ${{ toJson(secrets) }}
 
   build:
     needs: prepare
