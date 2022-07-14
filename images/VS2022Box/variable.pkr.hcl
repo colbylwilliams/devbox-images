@@ -22,7 +22,7 @@ variable "galleryResourceGroup" {
   description = "The resource group to use for the managed image"
 }
 
-variable "image" {
+variable "name" {
   type    = string
   default = ""
   description = "The name of the image to use for the build"
