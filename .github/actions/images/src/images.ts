@@ -26,7 +26,7 @@ const parseImage = async (gallery: Gallery, file: string): Promise<Image> => {
     image.source = file.split('/image.y')[0]; // ex: /home/runner/work/devbox-images/devbox-images/images/VSCodeBox
     image.path = image.source.split(`${workspace}/`)[1]; // ex: images/VSCodeBox/image.yml
 
-    image.locations = JSON.stringify(image.locations);
+    // image.locations = JSON.stringify(image.locations);
 
     image.useBuildGroup = !!image.buildResourceGroup && image.buildResourceGroup.length > 0;
 

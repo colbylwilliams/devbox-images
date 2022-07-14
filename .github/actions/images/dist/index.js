@@ -311,7 +311,7 @@ const parseImage = (gallery, file) => __awaiter(void 0, void 0, void 0, function
     image.galleryResourceGroup = gallery.resourceGroup;
     image.source = file.split('/image.y')[0]; // ex: /home/runner/work/devbox-images/devbox-images/images/VSCodeBox
     image.path = image.source.split(`${workspace}/`)[1]; // ex: images/VSCodeBox/image.yml
-    image.locations = JSON.stringify(image.locations);
+    // image.locations = JSON.stringify(image.locations);
     image.useBuildGroup = !!image.buildResourceGroup && image.buildResourceGroup.length > 0;
     image.tempResourceGroup = image.useBuildGroup ? '' : `${image.galleryName}-${image.name}-${github.context.runNumber}`;
     image.resolvedResourceGroup = image.useBuildGroup ? image.buildResourceGroup : image.tempResourceGroup;
