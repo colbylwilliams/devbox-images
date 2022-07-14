@@ -30,27 +30,6 @@ jobs:
         id: images
         uses: ./.github/actions/images
 
-      # - run: npm install js-yaml
-
-      # - name: Get Gallery Definition
-      #   id: gallery-definitions
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const script = require('./.github/scripts/gallery.js');
-      #       await script({github, context, core, glob, exec});
-
-      # - name: Get Image Definitions
-      #   id: packer-definitions
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const script = require('./.github/scripts/images.js');
-      #       await script({github, context, core, glob, exec});
-      #   env:
-      #     galleryName: ${{ steps.gallery-definitions.outputs.name }}
-      #     galleryResourceGroup: ${{ steps.gallery-definitions.outputs.resourceGroup }}
-
   build:
     needs: prepare
     runs-on: ubuntu-latest
@@ -68,12 +47,12 @@ jobs:
 
       - run: echo $FOO_BAR
         env:
-          FOO_BAR: ${{ format( matrix.repos[0].cloneUrl, secrets[matrix.repos[0].secret]) }}
+          FOO_BAR: ${{ join(format( matrix.repos.*.cloneUrl, secrets[matrix.repos.*.secret])) }}
 
-  #     - name: Login to Azure
-  #       uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
   #     - name: Init Packer
   #       working-directory: ${{ matrix.source }}

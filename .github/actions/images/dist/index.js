@@ -45,6 +45,7 @@ const exec = __importStar(__nccwpck_require__(1514));
 const NOT_FOUND_CODE = 'Code: ResourceNotFound';
 function validateImageDefinitionAndVersion(image) {
     return __awaiter(this, void 0, void 0, function* () {
+        core.startGroup(`Validating image definition and version for ${image.name}`);
         try {
             const imgDefShowCmd = [
                 'sig', 'image-definition', 'show',
@@ -75,6 +76,7 @@ function validateImageDefinitionAndVersion(image) {
                         // image version does not exist, add it to the list of images to create
                         core.info(`Image version ${image.version} does not exist for ${image.name}. Creating`);
                         // include.push(image);
+                        core.endGroup();
                         return true;
                     }
                     else {
@@ -115,6 +117,7 @@ function validateImageDefinitionAndVersion(image) {
                     core.info(`Successfully created image definition for ${image.name}`);
                     const img = JSON.parse(imgDefCreate.stdout);
                     image.location = image.useBuildGroup ? '' : img.location;
+                    core.endGroup();
                     return true;
                 }
                 else {
@@ -129,6 +132,7 @@ function validateImageDefinitionAndVersion(image) {
             if (error instanceof Error)
                 core.setFailed(error.message);
         }
+        core.endGroup();
         return false;
     });
 }
@@ -415,6 +419,7 @@ function run() {
             yield core.summary.addHeading('No images were built', 4).write();
         }
         if (skipped.length > 0) {
+            headers.pop();
             const skippedRows = [headers];
             for (const i of skipped) {
                 skippedRows.push([
@@ -424,7 +429,6 @@ function run() {
                     i.offer,
                     i.sku,
                     i.os,
-                    i.resolvedResourceGroup,
                 ]);
             }
             yield core.summary

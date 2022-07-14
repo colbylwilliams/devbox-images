@@ -6,6 +6,8 @@ const NOT_FOUND_CODE = 'Code: ResourceNotFound';
 
 export async function validateImageDefinitionAndVersion(image: Image): Promise<boolean> {
 
+    core.startGroup(`Validating image definition and version for ${image.name}`);
+
     try {
         const imgDefShowCmd = [
             'sig', 'image-definition', 'show',
@@ -44,6 +46,8 @@ export async function validateImageDefinitionAndVersion(image: Image): Promise<b
                     // image version does not exist, add it to the list of images to create
                     core.info(`Image version ${image.version} does not exist for ${image.name}. Creating`);
                     // include.push(image);
+
+                    core.endGroup();
                     return true;
 
                 } else {
@@ -93,6 +97,7 @@ export async function validateImageDefinitionAndVersion(image: Image): Promise<b
                 const img = JSON.parse(imgDefCreate.stdout);
                 image.location = image.useBuildGroup ? '' : img.location;
 
+                core.endGroup();
                 return true;
 
             } else {
@@ -107,5 +112,6 @@ export async function validateImageDefinitionAndVersion(image: Image): Promise<b
         if (error instanceof Error) core.setFailed(error.message);
     }
 
+    core.endGroup();
     return false;
 };

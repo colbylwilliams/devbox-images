@@ -59,6 +59,8 @@ async function run(): Promise<void> {
 
     if (skipped.length > 0) {
 
+        headers.pop();
+
         const skippedRows: SummaryTableRow[] = [headers];
 
         for (const i of skipped) {
@@ -69,7 +71,6 @@ async function run(): Promise<void> {
                 i.offer,
                 i.sku,
                 i.os,
-                i.resolvedResourceGroup,
             ]);
         }
 
