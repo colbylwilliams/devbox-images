@@ -53,8 +53,8 @@ jobs:
       - shell: python
         run: |
           import json
-          print(${{env.REPOS}})
-          repos = json.loads(${{env.REPOS}})
+
+          repos = json.loads('${{env.REPOS}}'')
           for u in repos:
             print(u)
         env:
