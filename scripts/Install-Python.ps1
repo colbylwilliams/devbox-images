@@ -6,7 +6,7 @@ $ProgressPreference = 'SilentlyContinue'	# hide any progress output
 $pythonVersion = "3.10.5"
 
 $installerName = "python-${pythonVersion}-amd64.exe"
-$InstallerPath = Join-Path -Path $env:TEMP -ChildPath $installerName
+$installerPath = Join-Path -Path $env:TEMP -ChildPath $installerName
 
 Write-Host "[${env:username}] Downloading Python ${pythonVersion} ..."
 (new-object net.webclient).DownloadFile("https://www.python.org/ftp/python/${pythonVersion}/python-${pythonVersion}-amd64.exe", $installerName)
