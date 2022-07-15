@@ -19,7 +19,7 @@ $process = Start-Process msiexec.exe -ArgumentList `
 	"/norestart" `
 	-NoNewWindow -Wait -PassThru
 
-$currentPath = [System.Environment]::GetEnvironmentVariable(PATH, "Machine")
+$currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 $newPath = "C:\Program Files (x86)\GitHub CLI" + ';' + $currentPath
 [System.Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
 

@@ -3,7 +3,7 @@
 
 choco install git -y --installargs="/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /o:PathOption=CmdTools /o:BashTerminalOption=ConHost /o:EnableSymlinks=Enabled /COMPONENTS=gitlfs" --no-progress
 
-$currentPath = [System.Environment]::GetEnvironmentVariable(PATH, "Machine")
+$currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 $newPath = "C:\Program Files\Git\bin" + ';' + $currentPath
 [System.Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
 

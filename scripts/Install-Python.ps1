@@ -15,9 +15,9 @@ Write-Host "[${env:username}] Downloading Python ${pythonVersion} ..."
 
 Write-Host "[${env:username}] Installing Python ${pythonVersion} ..."
 $process = Start-Process -FilePath $installerPath -ArgumentList `
-    "/quiet" `
-    "InstallAllUsers=1" `
-    "PrependPath=1" `
+    "/quiet", `
+    "InstallAllUsers=1", `
+    "PrependPath=1", `
     "Include_test=0" `
     -NoNewWindow -Wait -PassThru
 
