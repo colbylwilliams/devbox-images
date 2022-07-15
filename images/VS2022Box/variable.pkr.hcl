@@ -77,3 +77,13 @@ variable "identities" {
   ]
   description = "One or more fully-qualified resource IDs of user assigned managed identities to be configured on the VM"
 }
+
+variable "repositories" {
+  type = list(object({
+    url    = string
+    secret = string
+  }))
+  default     = []
+  description = "The repositories to clone on the image"
+  sensitive   = true
+}

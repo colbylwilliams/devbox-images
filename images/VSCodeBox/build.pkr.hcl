@@ -79,9 +79,9 @@ build {
     elevated_user     = build.User
     elevated_password = build.Password
     inline = [
-      "choco install postman --confirm",
-      "choco install googlechrome --confirm",
-      "choco install firefox --confirm"
+      "choco install postman --yes --no-progress",
+      "choco install googlechrome --yes --no-progress",
+      "choco install firefox --yes --no-progress"
     ]
   }
 
@@ -97,6 +97,12 @@ build {
       "../../scripts/Install-AzureCLI.ps1",
       "../../scripts/Install-VSCode.ps1"
     ]
+  }
+
+  provisioner "powershell" {
+    elevated_user     = build.User
+    elevated_password = build.Password
+    scripts           = [for r in var.repositories : "../../scripts/Clone-Repo.ps1 -Url ${r.url} -Secret ${r.secret}"]
   }
 
   provisioner "powershell" {
