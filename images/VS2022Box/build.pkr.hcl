@@ -3,7 +3,7 @@ packer {
     # https://github.com/rgl/packer-plugin-windows-update
     windows-update = {
       version = "0.14.1"
-      source = "github.com/rgl/windows-update"
+      source  = "github.com/rgl/windows-update"
     }
   }
 }
@@ -48,16 +48,17 @@ build {
   sources = ["source.azure-arm.vm"]
 
   provisioner "powershell" {
-    environment_vars  = [
+    environment_vars = [
       "ADMIN_USERNAME=${build.User}",
-      "ADMIN_PASSWORD=${build.Password}" ]
-    script            = "../../scripts/Enable-AutoLogon.ps1"
+      "ADMIN_PASSWORD=${build.Password}"
+    ]
+    script = "../../scripts/Enable-AutoLogon.ps1"
   }
 
   provisioner "windows-restart" {
     # needed to get elevated script execution working
-    restart_timeout       = "30m"
-    pause_before          = "2m"
+    restart_timeout = "30m"
+    pause_before    = "2m"
   }
 
   # https://github.com/rgl/packer-plugin-windows-update
@@ -67,7 +68,7 @@ build {
   provisioner "powershell" {
     elevated_user     = build.User
     elevated_password = build.Password
-    scripts           = [
+    scripts = [
       "../../scripts/Install-PsModules.ps1",
       "../../scripts/Install-AzPsModule.ps1",
       "../../scripts/Install-Chocolatey.ps1"
@@ -77,7 +78,7 @@ build {
   provisioner "powershell" {
     elevated_user     = build.User
     elevated_password = build.Password
-    inline            = [
+    inline = [
       "choco install postman --confirm",
       "choco install googlechrome --confirm",
       "choco install firefox --confirm"
@@ -87,7 +88,7 @@ build {
   provisioner "powershell" {
     elevated_user     = build.User
     elevated_password = build.Password
-    scripts           = [
+    scripts = [
       "../../scripts/Install-Git.ps1",
       "../../scripts/Install-GitHub-CLI.ps1",
       "../../scripts/Install-DotNet.ps1",
