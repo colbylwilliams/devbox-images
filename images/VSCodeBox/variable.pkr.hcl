@@ -71,8 +71,8 @@ variable "version" {
 }
 
 variable "identities" {
-  type = list(string)
-  default = []
+  type        = list(string)
+  default     = []
   description = "One or more fully-qualified resource IDs of user assigned managed identities to be configured on the VM"
 }
 
