@@ -2,13 +2,8 @@ description: Windows 11 Enterprise + M365 Apps + VSCode
 publisher: Contoso
 offer: DevBox
 sku: win11-vscode
-version: 1.0.22
+version: 1.0.23
 os: Windows
 replicaLocations:
   - eastus
   - westeurope
-repos:
-  - url: https://github.com/colbylwilliams/devbox-images
-    secret: https://contosogallery.vault.azure.net/secrets/repo-aa
-  - url: https://github.com/colbylwilliams/az-util
-    secret: https://contosogallery.vault.azure.net/secrets/repo-bb

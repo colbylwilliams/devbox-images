@@ -99,11 +99,12 @@ build {
     ]
   }
 
-  provisioner "powershell" {
-    elevated_user     = build.User
-    elevated_password = build.Password
-    scripts           = [for r in var.repos : "../../scripts/Clone-Repo.ps1 -Url ${r.url} -Secret ${r.secret}"]
-  }
+  // this doesn't work yet
+  // provisioner "powershell" {
+  //   elevated_user     = build.User
+  //   elevated_password = build.Password
+  //   scripts           = [for r in var.repos : "../../scripts/Clone-Repo.ps1 -Url '${r.url}' -Secret '${r.secret}'"]
+  // }
 
   provisioner "powershell" {
     scripts = [

@@ -72,9 +72,7 @@ variable "version" {
 
 variable "identities" {
   type = list(string)
-  default = [
-    "/subscriptions/e5f715ae-6c72-4a5c-87c8-495590c34828/resourcegroups/Compute-Gallery/providers/Microsoft.ManagedIdentity/userAssignedIdentities/Contoso-Packer"
-  ]
+  default = []
   description = "One or more fully-qualified resource IDs of user assigned managed identities to be configured on the VM"
 }
 
@@ -85,5 +83,4 @@ variable "repos" {
   }))
   default     = []
   description = "The repositories to clone on the image"
-  sensitive   = true
 }
