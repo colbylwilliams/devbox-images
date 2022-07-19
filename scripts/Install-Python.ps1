@@ -9,7 +9,7 @@ $installerName = "python-${pythonVersion}-amd64.exe"
 $installerPath = Join-Path -Path $env:TEMP -ChildPath $installerName
 
 Write-Host "[${env:username}] Downloading Python ${pythonVersion} ..."
-(new-object net.webclient).DownloadFile("https://www.python.org/ftp/python/${pythonVersion}/python-${pythonVersion}-amd64.exe", $installerName)
+(new-object net.webclient).DownloadFile("https://www.python.org/ftp/python/${pythonVersion}/python-${pythonVersion}-amd64.exe", $installerPath)
 
 # https://docs.python.org/3/using/windows.html#installing-without-ui
 
