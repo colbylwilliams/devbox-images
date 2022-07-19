@@ -78,7 +78,7 @@ variable "identities" {
   description = "One or more fully-qualified resource IDs of user assigned managed identities to be configured on the VM"
 }
 
-variable "repositories" {
+variable "repos" {
   type = list(object({
     url    = string
     secret = string
