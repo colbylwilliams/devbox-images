@@ -31,7 +31,7 @@ def get_vars(image):
     try:
         proc = subprocess.run(['packer', 'inspect', '-machine-readable', image['path']], capture_output=True, check=True, text=True)
         if proc.stdout:
-            return [v.strip().removeprefix('var.').split(':')[0] for v in proc.stdout.split('\\n') if v.startswith('var.')]
+            return [v.strip().split('var.')[1].split(':')[0] for v in proc.stdout.split('\\n') if v.startswith('var.')]
         return default_pkr_vars
     except subprocess.CalledProcessError:
         return default_pkr_vars
@@ -42,7 +42,7 @@ async def get_vars_async(image):
         proc = await asyncio.create_subprocess_exec('packer', 'inspect', '-machine-readable', image['path'], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         stdout, stderr = await proc.communicate()
         if stdout:
-            return [v.strip().removeprefix('var.').split(':')[0] for v in stdout.decode().split('\\n') if v.startswith('var.')]
+            return [v.strip().split('var.')[1].split(':')[0] for v in stdout.decode().split('\\n') if v.startswith('var.')]
         return default_pkr_vars
     except subprocess.CalledProcessError:
         return default_pkr_vars
