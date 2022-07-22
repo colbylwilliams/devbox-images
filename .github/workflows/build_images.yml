@@ -23,8 +23,7 @@ jobs:
 
       - name: Get Image Definitions
         id: images
-        shell: python
-        run: ./tools/images.py
+        run: python ./tools/images.py
 
   build:
     needs: prepare
@@ -46,5 +45,4 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Build Image
-        shell: python
-        run: ./tools/build.py --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
+        run: python ./tools/build.py --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
