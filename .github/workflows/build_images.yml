@@ -56,4 +56,4 @@ jobs:
         shell: python
         env:
           PATH_SEP: ${{ runner.os == 'Windows' && '\' || '/' }}
-        run: ${{ join(env.TOOLS_PATH_FMT, env.PATH_SEP, 'build.py') }} --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
+        run: ${{ format(env.TOOLS_PATH_FMT, env.PATH_SEP, 'build.py') }} --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
