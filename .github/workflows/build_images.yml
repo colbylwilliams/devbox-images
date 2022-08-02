@@ -22,6 +22,11 @@ jobs:
       images: ${{ steps.images.outputs.images }}
 
     steps:
+      - shell: python
+        run: |
+          import shutil
+          shutil.which('az')
+
       - uses: actions/checkout@v2
 
       - name: Get Image Definitions
