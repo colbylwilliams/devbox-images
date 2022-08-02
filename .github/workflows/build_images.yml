@@ -16,6 +16,9 @@ jobs:
   prepare:
     runs-on: windows-latest
 
+    env:
+      TOOLS_PATH: ${{ format('{0}{1}tools{1}', github.workspace, (runner.os == 'Windows' && '\' || '/') ) }}
+
     outputs:
       build: ${{ steps.images.outputs.build }}
       images: ${{ steps.images.outputs.images }}
@@ -25,8 +28,8 @@ jobs:
 
       - name: Get Image Definitions
         id: images
-        shell: python {0}
-        run: './tools/images.py'
+        shell: python
+        run: ${{ env.TOOLS_PATH }}images.py
 
   build:
     needs: prepare
@@ -34,6 +37,9 @@ jobs:
 
     # this is needed to avoid workflow errors in case of an empty matrix
     if: ${{ needs.prepare.outputs.build == 'true' }}
+
+    env:
+      TOOLS_PATH: ${{ format('{0}{1}tools{1}', github.workspace, (runner.os == 'Windows' && '\' || '/') ) }}
 
     strategy:
       fail-fast: false
@@ -49,5 +55,4 @@ jobs:
 
       - name: Build Image
         shell: python
-        run: |
-          "./tools/build.py" --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
+        run: ${{ env.TOOLS_PATH }}build.py --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
