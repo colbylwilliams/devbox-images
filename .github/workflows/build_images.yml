@@ -12,9 +12,6 @@ on:
       - 'tools/**'
       - '.github/**'
 
-env:
-  TOOLS_PATH_FMT: ${{ github.workspace }}{0}tools{0}{1}
-
 jobs:
   prepare:
     runs-on: windows-latest
@@ -28,9 +25,6 @@ jobs:
 
       - name: Get Image Definitions
         id: images
-        env:
-          PATH_SEP: ${{ runner.os == 'Windows' && '\' || '/' }}
-        # run: python "${{ format(env.TOOLS_PATH_FMT, env.PATH_SEP, 'images.py') }}"
         run: python "./tools/images.py"
 
   build:
@@ -52,8 +46,6 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Build Image
-        shell: python
-        env:
-          PATH_SEP: ${{ runner.os == 'Windows' && '\' || '/' }}
-        run: ${{ format(env.TOOLS_PATH_FMT, env.PATH_SEP, 'build.py') }} --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
+      - name: Build ${{ matrix.name }}
+        # run: python "./tools/build.py" --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
+        run: python "./tools/build.py" --suffix ${{ github.run_number }} --images ${{ matrix.name }}
