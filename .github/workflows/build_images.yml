@@ -31,7 +31,7 @@ jobs:
         shell: python
         env:
           PATH_SEP: ${{ runner.os == 'Windows' && '\' || '/' }}
-        run: ${{ join('env.TOOLS_PATH_FMT', 'env.PATH_SEP', 'images.py') }}
+        run: ${{ format(env.TOOLS_PATH_FMT, env.PATH_SEP, 'images.py') }}
 
   build:
     needs: prepare
