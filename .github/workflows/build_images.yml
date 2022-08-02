@@ -25,7 +25,7 @@ jobs:
       - name: Get Image Definitions
         id: images
         shell: python
-        run: ./tools/images.py
+        run: ${{ github.workspace }}/tools/images.py
 
   build:
     needs: prepare
@@ -48,4 +48,4 @@ jobs:
 
       - name: Build Image
         shell: python
-        run: ./tools/build.py --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
+        run: ${{ github.workspace }}/tools/build.py --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
