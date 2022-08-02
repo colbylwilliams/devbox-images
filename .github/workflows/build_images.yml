@@ -12,12 +12,15 @@ on:
       - 'tools/**'
       - '.github/**'
 
+env:
+  TOOLS_PATH_FMT: ${{ 'github.workspace{0}tools{0}{1}' }}
+
 jobs:
   prepare:
     runs-on: windows-latest
 
     env:
-      TOOLS_PATH: ${{ format('{0}{1}tools{1}', github.workspace, (runner.os == 'Windows' && '\' || '/') ) }}
+      TOOLS_PATH_FMT: ${{ format('{0}{1}tools{1}', github.workspace, (runner.os == 'Windows' && '\' || '/') ) }}
 
     outputs:
       build: ${{ steps.images.outputs.build }}
@@ -29,7 +32,9 @@ jobs:
       - name: Get Image Definitions
         id: images
         shell: python
-        run: ${{ env.TOOLS_PATH }}images.py
+        env:
+          PATH_SEP: ${{ runner.os == 'Windows' && '\' || '/' }}
+        run: ${{ join(env.TOOLS_PATH_FMT, env.PATH_SEP, 'images.py') }}
 
   build:
     needs: prepare
@@ -55,4 +60,6 @@ jobs:
 
       - name: Build Image
         shell: python
-        run: ${{ env.TOOLS_PATH }}build.py --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
+        env:
+          PATH_SEP: ${{ runner.os == 'Windows' && '\' || '/' }}
+        run: ${{ join(env.TOOLS_PATH_FMT, env.PATH_SEP, 'build.py') }} --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
