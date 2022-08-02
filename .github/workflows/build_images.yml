@@ -14,49 +14,14 @@ on:
 
 jobs:
   prepare:
-    runs-on: windows-latest
-    # runs-on: ubuntu-latest
+    # runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     outputs:
       build: ${{ steps.images.outputs.build }}
       images: ${{ steps.images.outputs.images }}
 
     steps:
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - shell: python
-        run: |
-          import json
-          import shutil
-          import subprocess
-          import sys
-
-          aaa = shutil.which('az')
-          print(aaa)
-
-          ppp = shutil.which('packer')
-          print(ppp)
-
-          RESOURCE_NOT_FOUND = 'Code: ResourceNotFound'
-
-          try:
-              proc = subprocess.run([aaa, 'account', 'show'], capture_output=True, check=True, text=True)
-              resource = json.loads(proc.stdout)
-              print(resource)
-
-          except subprocess.CalledProcessError as e:
-
-              if e.stderr and RESOURCE_NOT_FOUND in e.stderr:
-                  print('None')
-
-              sys.exit(e.stderr if e.stderr else 'azure cli command failed')
-
-          except json.decoder.JSONDecodeError:
-              sys.exit('{}: {}'.format('Could decode response json', proc.stderr if proc.stderr else proc.stdout if proc.stdout else proc))
-
       - uses: actions/checkout@v2
 
       - name: Get Image Definitions
@@ -65,8 +30,8 @@ jobs:
 
   build:
     needs: prepare
-    runs-on: windows-latest
-    # runs-on: ubuntu-latest
+    # runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     # this is needed to avoid workflow errors in case of an empty matrix
     if: ${{ needs.prepare.outputs.build == 'true' }}
