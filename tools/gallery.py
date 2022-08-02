@@ -8,6 +8,15 @@ repo_root = this_path.parent
 
 
 def get():
+    '''
+    ### Summary
+    Looks for a 'gallery.yaml' or 'gallery.yml' file in the root of the repository and returns a dictionary of the contents.
+
+    ### Returns:
+    A dictionary of the contents of the gallery.yaml file.
+    #### example:
+    `{ 'name': 'galleryName', 'resourceGroup': 'galleryResourceGroup' }`
+    '''
     gallery_yaml = os.path.isfile(os.path.join(repo_root, 'gallery.yaml'))
     gallery_yml = os.path.isfile(os.path.join(repo_root, 'gallery.yml'))
 

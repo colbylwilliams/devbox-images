@@ -23,6 +23,37 @@ def validate(image):
 
 
 def get(image_name) -> dict:
+    '''
+    ### Summary
+    Looks for a directory containing a 'image.yaml' or 'image.yml' file in the /images direcory and returns a dictionary of the contents.
+
+    ### Returns:
+    A dictionary of the contents of the image.yaml file.
+
+    #### example:
+    ```
+    {
+      'description': 'Windows 11 Enterprise + M365 Apps + VSCode',
+      'publisher': 'Contoso',
+      'offer': 'DevBox',
+      'sku': 'win11-vscode',
+      'version': '1.0.25',
+      'os': 'Windows',
+      'replicaLocations': [
+        'eastus',
+        'westeurope'
+      ],
+      'name': 'VSCodeBox',
+      'path': '/Users/user/GitHub/user/devbox-images/images/VSCodeBox',
+      'gallery': {
+        'name': 'Contoso',
+        'resourceGroup': 'Compute-Gallery'
+      },
+      'location': 'eastus',
+      'tempResourceGroup': 'Contoso-VSCodeBox-20220722190624'
+    }
+    ```
+    '''
 
     image_dir = images_root / image_name
 
@@ -53,6 +84,39 @@ def get(image_name) -> dict:
 
 
 def all() -> list:
+    '''
+    ### Summary
+    Looks for a directories containing a 'image.yaml' or 'image.yml' file in the /images direcory and returns a list of dictionaries of the contents.
+
+    ### Returns:
+    A dictionary of the contents of the image.yaml file.
+
+    #### example:
+    ```
+    [
+      {
+        'description': 'Windows 11 Enterprise + M365 Apps + VSCode',
+        'publisher': 'Contoso',
+        'offer': 'DevBox',
+        'sku': 'win11-vscode',
+        'version': '1.0.25',
+        'os': 'Windows',
+        'replicaLocations': [
+          'eastus',
+          'westeurope'
+        ],
+        'name': 'VSCodeBox',
+        'path': '/Users/user/GitHub/user/devbox-images/images/VSCodeBox',
+        'gallery': {
+          'name': 'Contoso',
+          'resourceGroup': 'Compute-Gallery'
+        },
+        'location': 'eastus',
+        'tempResourceGroup': 'Contoso-VSCodeBox-20220722190624'
+      }
+    ]
+    ```
+    '''
     images = []
 
     # walk the images directory and find all the image.yml/image.yaml files

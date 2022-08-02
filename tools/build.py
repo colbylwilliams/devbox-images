@@ -13,7 +13,9 @@ this_path = Path(__file__).resolve().parent
 repo_root = this_path.parent
 images_root = repo_root / 'images'
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description='Build custom images for Microsoft Dev Box using Packer then pubish them to an Azure Compute Gallery.'
+                                 'This script asumes the presence of a gallery.yaml file in the root of the repository and image.yaml files in each subdirectory of the /images directory',
+                                 epilog='example: python3 build.py --suffix 22 --packer')
 parser.add_argument('--async', '-a', dest='is_async', action='store_true', help='build images asynchronously. because the processes run in parallel, the output is not ordered')
 parser.add_argument('--images', '-i', nargs='*', help='names of images to build. if not specified all images will be')
 parser.add_argument('--changes', '-c', nargs='*', help='paths of the files that changed to determine which images to build. if not specified all images will be built')
