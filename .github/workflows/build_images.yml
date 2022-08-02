@@ -30,7 +30,8 @@ jobs:
         id: images
         env:
           PATH_SEP: ${{ runner.os == 'Windows' && '\' || '/' }}
-        run: python "${{ format(env.TOOLS_PATH_FMT, env.PATH_SEP, 'images.py') }}"
+        # run: python "${{ format(env.TOOLS_PATH_FMT, env.PATH_SEP, 'images.py') }}"
+        run: python "./tools/images.py"
 
   build:
     needs: prepare
