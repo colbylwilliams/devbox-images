@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import json
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -11,6 +12,7 @@ this_path = Path(__file__).resolve().parent
 repo_root = this_path.parent
 images_root = repo_root / 'images'
 
+packer = shutil.which('packer')
 
 default_pkr_vars = [
     'subscription',
@@ -29,7 +31,7 @@ default_pkr_vars = [
 
 def get_vars(image):
     try:
-        proc = subprocess.run(['packer', 'inspect', '-machine-readable', image['path']], capture_output=True, check=True, text=True)
+        proc = subprocess.run([packer, 'inspect', '-machine-readable', image['path']], capture_output=True, check=True, text=True)
         if proc.stdout:
             return [v.strip().split('var.')[1].split(':')[0] for v in proc.stdout.split('\\n') if v.startswith('var.')]
         return default_pkr_vars
@@ -39,7 +41,7 @@ def get_vars(image):
 
 async def get_vars_async(image):
     try:
-        proc = await asyncio.create_subprocess_exec('packer', 'inspect', '-machine-readable', image['path'], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        proc = await asyncio.create_subprocess_exec(packer, 'inspect', '-machine-readable', image['path'], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         stdout, stderr = await proc.communicate()
         if stdout:
             return [v.strip().split('var.')[1].split(':')[0] for v in stdout.decode().split('\\n') if v.startswith('var.')]
@@ -91,14 +93,14 @@ def save_vars_files(images):
 
 def init(image):
     print(f'executing packer init for {image["name"]}')
-    proc = subprocess.run(['packer', 'init', image['path']], check=True, text=True)
+    proc = subprocess.run([packer, 'init', image['path']], check=True, text=True)
     print(f'done executing packer init for {image["name"]}')
     return proc.returncode
 
 
 async def init_async(image):
     print(f'executing packer init for {image["name"]}')
-    proc = await asyncio.create_subprocess_exec('packer', 'init', image['path'])
+    proc = await asyncio.create_subprocess_exec(packer, 'init', image['path'])
     stdout, stderr = await proc.communicate()
     print(f'done executing packer init for {image["name"]}')
     print(f'[packer init for {image["name"]} exited with {proc.returncode}]')
@@ -107,14 +109,14 @@ async def init_async(image):
 
 def build(image):
     print(f'executing packer build for {image["name"]}')
-    proc = subprocess.run(['packer', 'build', '-force', image['path']], check=True, text=True)
+    proc = subprocess.run([packer, 'build', '-force', image['path']], check=True, text=True)
     print(f'done executing packer build for {image["name"]}')
     return proc.returncode
 
 
 async def build_async(image):
     print(f'executing packer build for {image["name"]}')
-    proc = await asyncio.create_subprocess_exec('packer', 'build', '-force', image['path'])
+    proc = await asyncio.create_subprocess_exec(packer, 'build', '-force', image['path'])
     stdout, stderr = await proc.communicate()
     print(f'done executing packer build for {image["name"]}')
     print(f'[packer build for {image["name"]} exited with {proc.returncode}]')

@@ -1,5 +1,6 @@
 import asyncio
 import json
+import shutil
 import subprocess
 import sys
 
@@ -14,8 +15,13 @@ def _parse_command(command):
     else:
         raise ValueError(f'command must be a string or list, not {type(command)}')
 
-    if args[0] != 'az':
-        args = ['az'] + args
+    az = shutil.which('az')
+
+    if args[0] == 'az':
+        args.pop(0)
+
+    if args[0] != az:
+        args = [az] + args
 
     return args
 
