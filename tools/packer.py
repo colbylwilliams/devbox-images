@@ -12,7 +12,6 @@ this_path = Path(__file__).resolve().parent
 repo_root = this_path.parent
 images_root = repo_root / 'images'
 
-packer = shutil.which('packer')
 
 default_pkr_vars = [
     'subscription',
@@ -31,6 +30,7 @@ default_pkr_vars = [
 
 def get_vars(image):
     try:
+        packer = shutil.which('packer')
         proc = subprocess.run([packer, 'inspect', '-machine-readable', image['path']], capture_output=True, check=True, text=True)
         if proc.stdout:
             return [v.strip().split('var.')[1].split(':')[0] for v in proc.stdout.split('\\n') if v.startswith('var.')]
@@ -41,6 +41,7 @@ def get_vars(image):
 
 async def get_vars_async(image):
     try:
+        packer = shutil.which('packer')
         proc = await asyncio.create_subprocess_exec(packer, 'inspect', '-machine-readable', image['path'], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         stdout, stderr = await proc.communicate()
         if stdout:
@@ -92,6 +93,7 @@ def save_vars_files(images):
 
 
 def init(image):
+    packer = shutil.which('packer')
     print(f'executing packer init for {image["name"]}')
     proc = subprocess.run([packer, 'init', image['path']], check=True, text=True)
     print(f'done executing packer init for {image["name"]}')
@@ -99,6 +101,7 @@ def init(image):
 
 
 async def init_async(image):
+    packer = shutil.which('packer')
     print(f'executing packer init for {image["name"]}')
     proc = await asyncio.create_subprocess_exec(packer, 'init', image['path'])
     stdout, stderr = await proc.communicate()
@@ -108,6 +111,7 @@ async def init_async(image):
 
 
 def build(image):
+    packer = shutil.which('packer')
     print(f'executing packer build for {image["name"]}')
     proc = subprocess.run([packer, 'build', '-force', image['path']], check=True, text=True)
     print(f'done executing packer build for {image["name"]}')
@@ -115,6 +119,7 @@ def build(image):
 
 
 async def build_async(image):
+    packer = shutil.which('packer')
     print(f'executing packer build for {image["name"]}')
     proc = await asyncio.create_subprocess_exec(packer, 'build', '-force', image['path'])
     stdout, stderr = await proc.communicate()
