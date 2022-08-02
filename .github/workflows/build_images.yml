@@ -24,7 +24,7 @@ jobs:
 
       - name: Get Image Definitions
         id: images
-        shell: python
+        shell: python {0}
         run: './tools/images.py'
 
   build:
