@@ -38,7 +38,9 @@ jobs:
           print(aaa)
 
           ppp = shutil.which('packer')
-          print(packer)
+          print(ppp)
+
+          RESOURCE_NOT_FOUND = 'Code: ResourceNotFound'
 
           try:
               proc = subprocess.run([aaa, 'account', 'show'], capture_output=True, check=True, text=True)
