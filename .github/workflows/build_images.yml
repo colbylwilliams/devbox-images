@@ -15,6 +15,7 @@ on:
 jobs:
   prepare:
     runs-on: windows-latest
+    # runs-on: ubuntu-latest
 
     outputs:
       build: ${{ steps.images.outputs.build }}
@@ -30,6 +31,7 @@ jobs:
   build:
     needs: prepare
     runs-on: windows-latest
+    # runs-on: ubuntu-latest
 
     # this is needed to avoid workflow errors in case of an empty matrix
     if: ${{ needs.prepare.outputs.build == 'true' }}
@@ -45,6 +47,9 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: foo
+        run: az account show
 
       - name: Build ${{ matrix.name }}
         # run: python "./tools/build.py" --suffix ${{ github.run_number }} --images ${{ matrix.name }} --packer
