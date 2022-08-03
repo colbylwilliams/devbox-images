@@ -9,13 +9,13 @@ on:
     paths:
       - 'images/**'
       - 'scripts/**'
-      - 'tools/**'
-      - '.github/**'
+      # - 'tools/**'
+      # - '.github/**'
 
 jobs:
   prepare:
-    runs-on: windows-latest
-    # runs-on: ubuntu-latest
+    # runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     outputs:
       build: ${{ steps.images.outputs.build }}
@@ -30,8 +30,8 @@ jobs:
 
   build:
     needs: prepare
-    runs-on: windows-latest
-    # runs-on: ubuntu-latest
+    # runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     # this is needed to avoid workflow errors in case of an empty matrix
     if: ${{ needs.prepare.outputs.build == 'true' }}
