@@ -98,9 +98,14 @@ def main():
                 bicep_file = os.path.join(img['path'], 'image.bicep')
                 params_file = '@' + os.path.join(img['path'], 'image.parameters.json')
 
+                existing = azure.cli(['image', 'builder', 'show', '-g', img['gallery']['resourceGroup'], '-n', img['name']])
+                if existing:
+                    log_warning(f'image template {img["name"]} already exists in {img["gallery"]["resourceGroup"]}. deleting')
+                    azure.cli(['image', 'builder', 'delete', '-g', img['gallery']['resourceGroup'], '-n', img['name']])
+
                 log_message(f'Creating image template for {img["name"]}')
                 log_message(f'Deploying bicep template for image template: {bicep_file}')
-                group = azure.cli(['deployment', 'group', 'create', '-g', img['gallery']['resourceGroup'], '-f', bicep_file, '-p', params_file, '--no-prompt'])
+                group = azure.cli(['deployment', 'group', 'create', '-n', img['name'], '-g', img['gallery']['resourceGroup'], '-f', bicep_file, '-p', params_file, '--no-prompt'])
 
                 log_message(f'Executing build on image template: {img["name"]}')
                 build = azure.cli(['image', 'builder', 'run', '-g', img['gallery']['resourceGroup'], '-n', img['name']])
