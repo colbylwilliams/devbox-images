@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -16,6 +17,28 @@ default_params = [
     'gallery',
     'replicaLocations'
 ]
+
+is_github = os.environ.get('GITHUB_ACTIONS', False)
+
+
+def log_message(msg):
+    print(f'[tools/azure] {msg}')
+
+
+def log_warning(msg):
+    if is_github:
+        print(f'::warning:: {msg}')
+    else:
+        log_message(f'WARNING: {msg}')
+
+
+def log_error(msg):
+    if is_github:
+        print(f'::error:: {msg}')
+    else:
+        log_message(f'ERROR: {msg}')
+
+    raise ValueError(msg)
 
 
 def _parse_command(command):
@@ -67,7 +90,7 @@ def cli(command):
     args = _parse_command(command)
 
     try:
-        print(f'running az cli command: {" ".join(args)}')
+        log_message(f'running az cli command: {" ".join(args)}')
         proc = subprocess.run(args, capture_output=True, check=True, text=True)
         resource = json.loads(proc.stdout)
         return resource
@@ -87,7 +110,7 @@ async def cli_async(command):
 
     args = _parse_command(command)
 
-    print(f'running az cli command: {" ".join(args)}')
+    log_message(f'running az cli command: {" ".join(args)}')
     proc = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await proc.communicate()
 
@@ -161,27 +184,27 @@ def ensure_image_def_version(image):
 
     build = False
 
-    print(f'validating image definition and version for {image_name}')
-    print(f'..checking if image definition exists for {image_name}')
+    log_message(f'validating image definition and version for {image_name}')
+    log_message(f'Checking if image definition exists for {image_name}')
     imgdef = cli(_img_def_show_cmd(image))
 
     if imgdef:  # image definition exists, check if the version already exists
 
-        print(f'..found existing image definition for {image_name}')
-        print(f'..checking if image version {image_version} exists for {image_name}')
+        log_message(f'Found existing image definition for {image_name}')
+        log_message(f'Checking if image version {image_version} exists for {image_name}')
         imgver = cli(_img_ver_show_cmd(image))
 
         if imgver:
-            print(f'..found existing image version {image_version} for {image_name}')
-            print(f'::warning:: {image_name} was not built because version {image_version} already exists. Please update the version number or delete the existing image version and try again.')
+            log_message(f'Found existing image version {image_version} for {image_name}')
+            log_warning(f'{image_name} was not built because version {image_version} already exists. Please update the version number or delete the existing image version and try again.')
         else:  # image version does not exist, add it to the list of images to create
-            print(f'..image version {image_version} does not exist for {image_name}')
+            log_message(f'Image version {image_version} does not exist for {image_name}')
             build = True
 
     else:  # image definition does not exist, create it and skip the version check
 
-        print(f'..image definition does not exist for {image_name}')
-        print(f'..creating image definition for {image_name}')
+        log_message(f'Image definition does not exist for {image_name}')
+        log_message(f'Creating image definition for {image_name}')
         imgdef = cli(_img_def_create_cmd(image))
 
         build = True
@@ -196,27 +219,27 @@ async def ensure_image_def_version_async(image):
 
     build = False
 
-    print(f'validating image definition and version for {image_name}')
-    print(f'..checking if image definition exists for {image_name}')
+    log_message(f'validating image definition and version for {image_name}')
+    log_message(f'Checking if image definition exists for {image_name}')
     imgdef = await cli_async(_img_def_show_cmd(image))
 
     if imgdef:  # image definition exists, check if the version already exists
 
-        print(f'..found existing image definition for {image_name}')
-        print(f'..checking if image version {image_version} exists for {image_name}')
+        log_message(f'Found existing image definition for {image_name}')
+        log_message(f'Checking if image version {image_version} exists for {image_name}')
         imgver = await cli_async(_img_ver_show_cmd(image))
 
         if imgver:
-            print(f'..found existing image version {image_version} for {image_name}')
-            print(f'::warning:: {image_name} was not built because version {image_version} already exists. Please update the version number or delete the existing image version and try again.')
+            log_message(f'Found existing image version {image_version} for {image_name}')
+            log_warning(f'{image_name} was not built because version {image_version} already exists. Please update the version number or delete the existing image version and try again.')
         else:  # image version does not exist, add it to the list of images to create
-            print(f'..image version {image_version} does not exist for {image_name}')
+            log_message(f'Image version {image_version} does not exist for {image_name}')
             build = True
 
     else:  # image definition does not exist, create it and skip the version check
 
-        print(f'..image definition does not exist for {image_name}')
-        print(f'..creating image definition for {image_name}')
+        log_message(f'Image definition does not exist for {image_name}')
+        log_message(f'Creating image definition for {image_name}')
         imgdef = await cli_async(_img_def_create_cmd(image))
 
         build = True

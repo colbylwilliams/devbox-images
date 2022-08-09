@@ -13,9 +13,23 @@ required_properties = ['publisher', 'offer', 'sku', 'version', 'os', 'replicaLoc
 is_github = os.environ.get('GITHUB_ACTIONS', False)
 
 
+def log_message(msg):
+    print(f'[tools/images] {msg}')
+
+
+def log_warning(msg):
+    if is_github:
+        print(f'::warning:: {msg}')
+    else:
+        log_message(f'WARNING: {msg}')
+
+
 def log_error(msg):
     if is_github:
         print(f'::error:: {msg}')
+    else:
+        log_message(f'ERROR: {msg}')
+
     raise ValueError(msg)
 
 

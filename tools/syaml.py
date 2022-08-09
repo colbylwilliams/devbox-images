@@ -3,9 +3,23 @@ import os
 is_github = os.environ.get('GITHUB_ACTIONS', False)
 
 
+def log_message(msg):
+    print(f'[tools/syaml] {msg}')
+
+
+def log_warning(msg):
+    if is_github:
+        print(f'::warning:: {msg}')
+    else:
+        log_message(f'WARNING: {msg}')
+
+
 def log_error(msg):
     if is_github:
         print(f'::error:: {msg}')
+    else:
+        log_message(f'ERROR: {msg}')
+
     raise ValueError(msg)
 
 # simple yaml parser, only supports a single level of nesting and arrays that use the '-' notation

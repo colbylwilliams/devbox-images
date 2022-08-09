@@ -41,17 +41,24 @@ for img in imgs:
     img['gallery'] = gal
 
 
-def log_error(msg):
-    if is_github:
-        print(f'::error:: {msg}')
-    raise ValueError(msg)
+def log_message(msg):
+    print(f'[tools/build] {msg}')
 
 
 def log_warning(msg):
     if is_github:
         print(f'::warning:: {msg}')
     else:
-        print(msg)
+        log_message(f'WARNING: {msg}')
+
+
+def log_error(msg):
+    if is_github:
+        print(f'::error:: {msg}')
+    else:
+        log_message(f'ERROR: {msg}')
+
+    raise ValueError(msg)
 
 
 def main():
@@ -91,11 +98,11 @@ def main():
                 bicep_file = os.path.join(img['path'], 'image.bicep')
                 params_file = '@' + os.path.join(img['path'], 'image.parameters.json')
 
-                print(f'Creating image template for {img["name"]}')
-                print(f'Deploying bicep template for image template: {bicep_file}')
+                log_message(f'Creating image template for {img["name"]}')
+                log_message(f'Deploying bicep template for image template: {bicep_file}')
                 group = azure.cli(['deployment', 'group', 'create', '-g', img['gallery']['resourceGroup'], '-f', bicep_file, '-p', params_file, '--no-prompt'])
 
-                print(f'Executing build on image template: {img["name"]}')
+                log_message(f'Executing build on image template: {img["name"]}')
                 build = azure.cli(['image', 'builder', 'run', '-g', img['gallery']['resourceGroup'], '-n', img['name']])
 
         else:
@@ -129,11 +136,11 @@ async def process_image_async(img):
                 bicep_file = os.path.join(img['path'], 'image.bicep')
                 params_file = '@' + os.path.join(img['path'], 'image.parameters.json')
 
-                print(f'Creating image template for {img["name"]}')
-                print(f'Deploying bicep template for image template: {bicep_file}')
+                log_message(f'Creating image template for {img["name"]}')
+                log_message(f'Deploying bicep template for image template: {bicep_file}')
                 group = azure.cli(['deployment', 'group', 'create', '-g', img['gallery']['resourceGroup'], '-f', bicep_file, '-p', params_file, '--no-prompt'])
 
-                print(f'Executing build on image template: {img["name"]}')
+                log_message(f'Executing build on image template: {img["name"]}')
                 build = azure.cli(['image', 'builder', 'run', '-g', img['gallery']['resourceGroup'], '-n', img['name']])
         else:
             log_error(f'image.yaml for {img["name"]} has an invalid builder property value {img["builder"]}')
