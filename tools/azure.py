@@ -92,6 +92,8 @@ def cli(command):
     try:
         log_message(f'Running az cli command: {" ".join(args)}')
         proc = subprocess.run(args, capture_output=True, check=True, text=True)
+        if proc.returncode == 0 and not proc.stdout:
+            return None
         resource = json.loads(proc.stdout)
         return resource
 
