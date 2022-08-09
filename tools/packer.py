@@ -28,6 +28,15 @@ default_pkr_vars = [
 ]
 
 
+is_github = os.environ.get('GITHUB_ACTIONS', False)
+
+
+def log_error(msg):
+    if is_github:
+        print(f'::error:: {msg}')
+    raise ValueError(msg)
+
+
 def get_vars(image):
     try:
         packer = shutil.which('packer')
@@ -142,12 +151,10 @@ def main(img_name):
     img_dir = images_root / img_name
 
     if not os.path.isdir(img_dir):
-        print(f'::error:: directory for image {img_name} not found at {img_dir}')
-        raise ValueError(f'directory for image {img_name} not found at {img_dir}')
+        log_error(f'directory for image {img_name} not found at {img_dir}')
 
     if not os.path.isfile(img_dir / 'vars.auto.pkrvars.json'):
-        print(f'::error:: vars.auto.pkrvars.json not found in {img_dir} must execute build.py first')
-        raise ValueError(f'vars.auto.pkrvars.json not found in {img_dir} must execute build.py first')
+        log_error(f'vars.auto.pkrvars.json not found in {img_dir} must execute build.py first')
 
     image = {}
     image['name'] = Path(img_dir).name

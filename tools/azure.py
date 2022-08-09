@@ -3,8 +3,19 @@ import json
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 RESOURCE_NOT_FOUND = 'Code: ResourceNotFound'
+
+default_params = [
+    'name',
+    'location',
+    'version',
+    'tempResourceGroup',
+    'buildResourceGroup',
+    'gallery',
+    'replicaLocations'
+]
 
 
 def _parse_command(command):
@@ -26,10 +37,37 @@ def _parse_command(command):
     return args
 
 
+def save_params_file(image, sub=None):
+    sub = sub if sub else get_sub()
+
+    params = {
+        '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#',
+        'contentVersion': '1.0.0.0',
+        'parameters': {}
+    }
+
+    for v in default_params:
+        if v in image and image[v]:
+            params['parameters'][v] = {
+                'value': image[v]
+            }
+
+    with open(Path(image['path']) / 'image.parameters.json', 'w') as f:
+        json.dump(params, f, ensure_ascii=False, indent=4, sort_keys=True)
+
+
+def save_params_files(images):
+    sub = get_sub()
+
+    for image in images:
+        save_params_file(image, sub)
+
+
 def cli(command):
     args = _parse_command(command)
 
     try:
+        print(f'running az cli command: {" ".join(args)}')
         proc = subprocess.run(args, capture_output=True, check=True, text=True)
         resource = json.loads(proc.stdout)
         return resource
@@ -49,6 +87,7 @@ async def cli_async(command):
 
     args = _parse_command(command)
 
+    print(f'running az cli command: {" ".join(args)}')
     proc = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await proc.communicate()
 
