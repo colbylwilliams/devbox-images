@@ -12,7 +12,7 @@ variable "commit" {
 
 variable "gallery" {
   type = object({
-    name = string
+    name          = string
     resourceGroup = string
   })
   description = "The azure compute gallery to publish the image"
