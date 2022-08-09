@@ -90,7 +90,7 @@ def cli(command):
     args = _parse_command(command)
 
     try:
-        log_message(f'running az cli command: {" ".join(args)}')
+        log_message(f'Running az cli command: {" ".join(args)}')
         proc = subprocess.run(args, capture_output=True, check=True, text=True)
         resource = json.loads(proc.stdout)
         return resource
@@ -110,7 +110,7 @@ async def cli_async(command):
 
     args = _parse_command(command)
 
-    log_message(f'running az cli command: {" ".join(args)}')
+    log_message(f'Running az cli command: {" ".join(args)}')
     proc = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await proc.communicate()
 
@@ -184,7 +184,7 @@ def ensure_image_def_version(image):
 
     build = False
 
-    log_message(f'validating image definition and version for {image_name}')
+    log_message(f'Validating image definition and version for {image_name}')
     log_message(f'Checking if image definition exists for {image_name}')
     imgdef = cli(_img_def_show_cmd(image))
 
@@ -219,7 +219,7 @@ async def ensure_image_def_version_async(image):
 
     build = False
 
-    log_message(f'validating image definition and version for {image_name}')
+    log_message(f'Validating image definition and version for {image_name}')
     log_message(f'Checking if image definition exists for {image_name}')
     imgdef = await cli_async(_img_def_show_cmd(image))
 

@@ -53,8 +53,7 @@ resource template 'Microsoft.VirtualMachineImages/imageTemplates@2022-02-14' = {
     }
   }
   properties: {
-    // seems to need more than 2 hours (default is 4 hours)
-    // buildTimeoutInMinutes: 120
+    // buildTimeoutInMinutes: 120 // seems to need more than 2 hours (default is 4 hours)
     stagingResourceGroup: stagingResourceGroup
     vmProfile: {
       vmSize: 'Standard_D8s_v3'
@@ -80,18 +79,6 @@ resource template 'Microsoft.VirtualMachineImages/imageTemplates@2022-02-14' = {
       }
     ]
     customize: [
-      // {
-      //   name: 'EnableAutoLogon'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Enable-AutoLogon.ps1'
-      // }
-      // {
-      //   name: 'WindowsRestart'
-      //   type: 'WindowsRestart'
-      //   restartTimeout: '30m'
-      // }
       {
         name: 'WindowsUpdate'
         type: 'WindowsUpdate'
@@ -179,11 +166,6 @@ resource template 'Microsoft.VirtualMachineImages/imageTemplates@2022-02-14' = {
         runAsSystem: true
         scriptUri: '${scriptsRoot}/Install-AzureCLI.ps1'
       }
-      // {
-      //   name: 'DisableAutoLogon'
-      //   type: 'PowerShell'
-      //   scriptUri: '${scriptsRoot}/Disable-AutoLogon.ps1'
-      // }
     ]
   }
 }

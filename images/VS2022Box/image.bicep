@@ -53,8 +53,7 @@ resource template 'Microsoft.VirtualMachineImages/imageTemplates@2022-02-14' = {
     }
   }
   properties: {
-    // seems to need more than 2 hours (default is 4 hours)
-    // buildTimeoutInMinutes: 120
+    // buildTimeoutInMinutes: 120 // seems to need more than 2 hours (default is 4 hours)
     stagingResourceGroup: stagingResourceGroup
     vmProfile: {
       vmSize: 'Standard_D8s_v3'
@@ -84,95 +83,99 @@ resource template 'Microsoft.VirtualMachineImages/imageTemplates@2022-02-14' = {
         name: 'WindowsUpdate'
         type: 'WindowsUpdate'
       }
-      // {
-      //   name: 'InstallPsModules'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Install-PsModules.ps1'
-      // }
-      // {
-      //   name: 'InstallAzPsModule'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Install-AzPsModule.ps1'
-      // }
+      {
+        name: 'WindowsUpdate'
+        type: 'WindowsUpdate'
+      }
+      {
+        name: 'InstallPsModules'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        scriptUri: '${scriptsRoot}/Install-PsModules.ps1'
+      }
+      {
+        name: 'InstallAzPsModule'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        scriptUri: '${scriptsRoot}/Install-AzPsModule.ps1'
+      }
 
-      // {
-      //   name: 'InstallChocolatey'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Install-Chocolatey.ps1'
-      // }
-      // {
-      //   name: 'ChacoInstalls'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   inline: [
-      //     // TODO: this fails with timeout error
-      //     // 'choco install postman --yes --no-progress'
-      //     'choco install googlechrome --yes --no-progress'
-      //     'choco install firefox --yes --no-progress'
-      //   ]
-      // }
-      // {
-      //   name: 'InstallGit'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Install-Git.ps1'
-      // }
-      // {
-      //   name: 'InstallGitHubCLI'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Install-GitHub-CLI.ps1'
-      // }
-      // {
-      //   name: 'InstallDotNet'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Install-DotNet.ps1'
-      // }
-      // {
-      //   name: 'InstallPython'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Install-Python.ps1'
-      // }
-      // {
-      //   name: 'InstallGitHubDesktop'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Install-GitHubDesktop.ps1'
-      // }
-      // {
-      //   name: 'InstallVSCode'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Install-VSCode.ps1'
-      // }
-      // {
-      //   name: 'InstallVS2022'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   scriptUri: '${scriptsRoot}/Install-VS2022.ps1'
-      // }
-      // {
-      //   name: 'InstallAzureCLI'
-      //   type: 'PowerShell'
-      //   runElevated: true
-      //   runAsSystem: true
-      //   scriptUri: '${scriptsRoot}/Install-AzureCLI.ps1'
-      // }
+      {
+        name: 'InstallChocolatey'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        scriptUri: '${scriptsRoot}/Install-Chocolatey.ps1'
+      }
+      {
+        name: 'ChacoInstalls'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        inline: [
+          // TODO: this fails with timeout error
+          // 'choco install postman --yes --no-progress'
+          'choco install googlechrome --yes --no-progress'
+          'choco install firefox --yes --no-progress'
+        ]
+      }
+      {
+        name: 'InstallGit'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        scriptUri: '${scriptsRoot}/Install-Git.ps1'
+      }
+      {
+        name: 'InstallGitHubCLI'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        scriptUri: '${scriptsRoot}/Install-GitHub-CLI.ps1'
+      }
+      {
+        name: 'InstallDotNet'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        scriptUri: '${scriptsRoot}/Install-DotNet.ps1'
+      }
+      {
+        name: 'InstallPython'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        scriptUri: '${scriptsRoot}/Install-Python.ps1'
+      }
+      {
+        name: 'InstallGitHubDesktop'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        scriptUri: '${scriptsRoot}/Install-GitHubDesktop.ps1'
+      }
+      {
+        name: 'InstallVSCode'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        scriptUri: '${scriptsRoot}/Install-VSCode.ps1'
+      }
+      {
+        name: 'InstallAzureCLI'
+        type: 'PowerShell'
+        runElevated: true
+        runAsSystem: true
+        scriptUri: '${scriptsRoot}/Install-AzureCLI.ps1'
+      }
+      {
+        name: 'InstallVS2022'
+        type: 'PowerShell'
+        runElevated: true
+        scriptUri: '${scriptsRoot}/Install-VS2022.ps1'
+      }
     ]
   }
 }
