@@ -54,7 +54,7 @@ def get(image_name) -> dict:
         error_exit(f'image.yaml or image.yml not found {image_dir}')
 
     if image_yaml and image_yml:
-        error_exit(f"found both 'image.yaml' and 'image.yml' in {image_dir} of repository. only one image yaml file allowed")
+        error_exit(f"Found both 'image.yaml' and 'image.yml' in {image_dir} of repository. only one image yaml file allowed")
 
     image_path = image_dir / 'image.yaml' if image_yaml else image_dir / 'image.yml'
 

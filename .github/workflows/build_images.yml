@@ -17,6 +17,8 @@ jobs:
     # runs-on: windows-latest
     runs-on: ubuntu-latest
 
+    if: "!contains(join(github.event.commits.*.message), '+nobuild')"
+
     outputs:
       build: ${{ steps.images.outputs.build }}
       images: ${{ steps.images.outputs.images }}
