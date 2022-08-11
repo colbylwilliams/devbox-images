@@ -4,14 +4,17 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import azure
+import loggers
 
-this_path = Path(__file__).resolve().parent
-repo_root = this_path.parent
-images_root = repo_root / 'images'
+is_github = os.environ.get('GITHUB_ACTIONS', False)
+in_builder = os.environ.get('ACI_IMAGE_BUILDER', False)
 
+repo = Path('/mnt/repo') if in_builder else Path(__file__).resolve().parent.parent
+images_root = repo / 'images'
 
 default_pkr_vars = [
     'subscription',
@@ -27,28 +30,12 @@ default_pkr_vars = [
     'commit'
 ]
 
-
-is_github = os.environ.get('GITHUB_ACTIONS', False)
-
-
-def log_message(msg):
-    print(f'[tools/packer] {msg}')
+log = loggers.getLogger(__name__)
 
 
-def log_warning(msg):
-    if is_github:
-        print(f'::warning:: {msg}')
-    else:
-        log_message(f'WARNING: {msg}')
-
-
-def log_error(msg):
-    if is_github:
-        print(f'::error:: {msg}')
-    else:
-        log_message(f'ERROR: {msg}')
-
-    raise ValueError(msg)
+def error_exit(message):
+    log.error(message)
+    sys.exit(message)
 
 
 def _parse_command(command):
@@ -72,10 +59,11 @@ def _parse_command(command):
 
 def get_vars(image):
     try:
-        args = _parse_command('inspect', '-machine-readable', image['path'])
-        log_message(f'running packer command: {" ".join(args)}')
+        args = _parse_command(['inspect', '-machine-readable', image['path']])
+        log.info(f'Running packer command: {" ".join(args)}')
         proc = subprocess.run(args, capture_output=True, check=True, text=True)
         if proc.stdout:
+            log.info(f'\n\n{proc.stdout}')
             return [v.strip().split('var.')[1].split(':')[0] for v in proc.stdout.split('\\n') if v.startswith('var.')]
         return default_pkr_vars
     except subprocess.CalledProcessError:
@@ -84,10 +72,11 @@ def get_vars(image):
 
 async def get_vars_async(image):
     try:
-        args = _parse_command('inspect', '-machine-readable', image['path'])
+        args = _parse_command(['inspect', '-machine-readable', image['path']])
         proc = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         stdout, stderr = await proc.communicate()
         if stdout:
+            log.info(f'\n\n{stdout}')
             return [v.strip().split('var.')[1].split(':')[0] for v in stdout.decode().split('\\n') if v.startswith('var.')]
         return default_pkr_vars
     except subprocess.CalledProcessError:
@@ -136,42 +125,46 @@ def save_vars_files(images):
 
 
 def init(image):
-    log_message(f'executing packer init for {image["name"]}')
-    args = _parse_command('init', image['path'])
-    log_message(f'running packer command: {" ".join(args)}')
-    proc = subprocess.run(args, check=True, text=True)
-    log_message(f'done executing packer init for {image["name"]}')
+    log.info(f'Executing packer init for {image["name"]}')
+    args = _parse_command(['init', image['path']])
+    log.info(f'Running packer command: {" ".join(args)}')
+    proc = subprocess.run(args, capture_output=True, check=True, text=True)
+    log.info(f'\n\n{proc.stdout}')
+    log.info(f'Done executing packer init for {image["name"]}')
     return proc.returncode
 
 
 async def init_async(image):
-    log_message(f'executing packer init for {image["name"]}')
-    args = _parse_command('init', image['path'])
-    log_message(f'running packer command: {" ".join(args)}')
+    log.info(f'Executing packer init for {image["name"]}')
+    args = _parse_command(['init', image['path']])
+    log.info(f'Running packer command: {" ".join(args)}')
     proc = await asyncio.create_subprocess_exec(*args)
     stdout, stderr = await proc.communicate()
-    log_message(f'done executing packer init for {image["name"]}')
-    log_message(f'[packer init for {image["name"]} exited with {proc.returncode}]')
+    # log.info(f'\n\n{stdout}')
+    log.info(f'Done executing packer init for {image["name"]}')
+    log.info(f'[packer init for {image["name"]} exited with {proc.returncode}]')
     return proc.returncode
 
 
 def build(image):
-    log_message(f'executing packer build for {image["name"]}')
+    log.info(f'Executing packer build for {image["name"]}')
     args = _parse_command(['build', '-force', image['path']])
-    log_message(f'running packer command: {" ".join(args)}')
-    proc = subprocess.run(args, check=True, text=True)
-    log_message(f'done executing packer build for {image["name"]}')
+    log.info(f'Running packer command: {" ".join(args)}')
+    proc = subprocess.run(args, capture_output=True, check=True, text=True)
+    log.info(f'\n\n{proc.stdout}')
+    log.info(f'Done executing packer build for {image["name"]}')
     return proc.returncode
 
 
 async def build_async(image):
-    log_message(f'executing packer build for {image["name"]}')
+    log.info(f'Executing packer build for {image["name"]}')
     args = _parse_command(['build', '-force', image['path']])
-    log_message(f'running packer command: {" ".join(args)}')
+    log.info(f'Running packer command: {" ".join(args)}')
     proc = await asyncio.create_subprocess_exec(*args)
     stdout, stderr = await proc.communicate()
-    log_message(f'done executing packer build for {image["name"]}')
-    log_message(f'[packer build for {image["name"]} exited with {proc.returncode}]')
+    # log.info(f'\n\n{stdout}')
+    log.info(f'Done executing packer build for {image["name"]}')
+    log.info(f'[packer build for {image["name"]} exited with {proc.returncode}]')
     return proc.returncode
 
 
@@ -189,10 +182,10 @@ def main(img_name):
     img_dir = images_root / img_name
 
     if not os.path.isdir(img_dir):
-        log_error(f'directory for image {img_name} not found at {img_dir}')
+        error_exit(f'directory for image {img_name} not found at {img_dir}')
 
     if not os.path.isfile(img_dir / 'vars.auto.pkrvars.json'):
-        log_error(f'vars.auto.pkrvars.json not found in {img_dir} must execute build.py first')
+        error_exit(f'vars.auto.pkrvars.json not found in {img_dir} must execute build.py first')
 
     image = {}
     image['name'] = Path(img_dir).name

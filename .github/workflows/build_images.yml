@@ -9,7 +9,7 @@ on:
     paths:
       - 'images/**'
       - 'scripts/**'
-      # - 'tools/**'
+      # - 'builder/**'
       # - '.github/**'
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
 
       - name: Get Image Definitions
         id: images
-        run: python "./tools/images.py"
+        run: python "./builder/images.py"
 
   build:
     needs: prepare
@@ -49,4 +49,4 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Build ${{ matrix.name }} with ${{ matrix.builder }}
-        run: python "./tools/build.py" --suffix ${{ github.run_number }} --images ${{ matrix.name }} --build
+        run: python "./builder/build.py" --suffix ${{ github.run_number }} --images ${{ matrix.name }} --build

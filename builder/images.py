@@ -1,46 +1,36 @@
 import argparse
 import os
+import sys
 from pathlib import Path
 
+import loggers
 import syaml
 
-this_path = Path(__file__).resolve().parent
-repo_root = this_path.parent
-images_root = repo_root / 'images'
+in_builder = os.environ.get('ACI_IMAGE_BUILDER', False)
+is_github = os.environ.get('GITHUB_ACTIONS', False)
+
+repo = Path('/mnt/repo') if in_builder else Path(__file__).resolve().parent.parent
+images_root = repo / 'images'
 
 required_properties = ['publisher', 'offer', 'sku', 'version', 'os', 'replicaLocations', 'builder']
 
-is_github = os.environ.get('GITHUB_ACTIONS', False)
+log = loggers.getLogger(__name__)
 
 
-def log_message(msg):
-    print(f'[tools/images] {msg}')
-
-
-def log_warning(msg):
-    if is_github:
-        print(f'::warning:: {msg}')
-    else:
-        log_message(f'WARNING: {msg}')
-
-
-def log_error(msg):
-    if is_github:
-        print(f'::error:: {msg}')
-    else:
-        log_message(f'ERROR: {msg}')
-
-    raise ValueError(msg)
+def error_exit(message):
+    log.error(message)
+    sys.exit(message)
 
 
 def validate(image):
+    log.info(f'validating image {image["name"]}')
     for required_property in required_properties:
         if required_property not in image:
-            log_error(f'image.yaml for {image["name"]} is missing required property {required_property}')
+            error_exit(f'image.yaml for {image["name"]} is missing required property {required_property}')
         if not image[required_property]:
-            log_error(f'image.yaml for {image["name"]} is missing a value for required property {required_property}')
+            error_exit(f'image.yaml for {image["name"]} is missing a value for required property {required_property}')
     if image['builder'] not in ['packer', 'azure']:
-        log_error(f'image.yaml for {image["name"]} has an invalid builder property value {image["builder"]}')
+        error_exit(f'image.yaml for {image["name"]} has an invalid builder property value {image["builder"]}')
 
 
 def get(image_name) -> dict:
@@ -51,20 +41,20 @@ def get(image_name) -> dict:
     ### Returns:
     A dictionary of the contents of the image.yaml file.
     '''
-
     image_dir = images_root / image_name
+    log.info(f'Getting image {image_name} from {image_dir}')
 
     if not os.path.isdir(image_dir):
-        log_error(f'directory for image {image_name} not found at {image_dir}')
+        error_exit(f'Directory for image {image_name} not found at {image_dir}')
 
     image_yaml = os.path.isfile(os.path.join(image_dir, 'image.yaml'))
     image_yml = os.path.isfile(os.path.join(image_dir, 'image.yml'))
 
     if not image_yaml and not image_yml:
-        log_error(f'image.yaml or image.yml not found {image_dir}')
+        error_exit(f'image.yaml or image.yml not found {image_dir}')
 
     if image_yaml and image_yml:
-        log_error(f"found both 'image.yaml' and 'image.yml' in {image_dir} of repository. only one image yaml file allowed")
+        error_exit(f"found both 'image.yaml' and 'image.yml' in {image_dir} of repository. only one image yaml file allowed")
 
     image_path = image_dir / 'image.yaml' if image_yaml else image_dir / 'image.yml'
 
