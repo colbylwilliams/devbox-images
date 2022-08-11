@@ -149,6 +149,8 @@ async def init_async(image):
 def build(image):
     log.info(f'Executing packer build for {image["name"]}')
     args = _parse_command(['build', '-force', image['path']])
+    if in_builder:
+        args.append('-color=false')
     log.info(f'Running packer command: {" ".join(args)}')
     proc = subprocess.run(args, capture_output=True, check=True, text=True)
     log.info(f'\n\n{proc.stdout}')
@@ -159,6 +161,8 @@ def build(image):
 async def build_async(image):
     log.info(f'Executing packer build for {image["name"]}')
     args = _parse_command(['build', '-force', image['path']])
+    if in_builder:
+        args.append('-color=false')
     log.info(f'Running packer command: {" ".join(args)}')
     proc = await asyncio.create_subprocess_exec(*args)
     stdout, stderr = await proc.communicate()
@@ -182,7 +186,7 @@ def main(img_name):
     img_dir = images_root / img_name
 
     if not os.path.isdir(img_dir):
-        error_exit(f'directory for image {img_name} not found at {img_dir}')
+        error_exit(f'Directory for image {img_name} not found at {img_dir}')
 
     if not os.path.isfile(img_dir / 'vars.auto.pkrvars.json'):
         error_exit(f'vars.auto.pkrvars.json not found in {img_dir} must execute build.py first')
