@@ -26,7 +26,8 @@ log = loggers.getLogger(__name__)
 
 
 def error_exit(message):
-    error_exit(message)
+    log.error(message)
+    sys.exit(message)
 
 
 def _parse_command(command):

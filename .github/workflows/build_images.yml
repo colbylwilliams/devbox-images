@@ -2,6 +2,11 @@ name: Build Images
 
 concurrency: ${{ github.ref }}
 
+env:
+  # if true, an Azure Container Instance will be deployed to execute the packer builds
+  # if false, the GitHub Action runner will execute the packer builds
+  USE_ACI: true
+
 on:
   workflow_dispatch:
   push:
@@ -13,11 +18,29 @@ on:
       # - '.github/**'
 
 jobs:
+  aci:
+    # runs-on: windows-latest
+    runs-on: ubuntu-latest
+
+    if: "env.USE_ACI == 'true' && !contains(join(github.event.commits.*.message), '+nobuild')"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Build ACI Containers
+        id: images
+        run: python "./builder/aci.py" --suffix ${{ github.run_number }} --build
+
   prepare:
     # runs-on: windows-latest
     runs-on: ubuntu-latest
 
-    if: "!contains(join(github.event.commits.*.message), '+nobuild')"
+    if: "env.USE_ACI != 'true' && !contains(join(github.event.commits.*.message), '+nobuild')"
 
     outputs:
       build: ${{ steps.images.outputs.build }}
