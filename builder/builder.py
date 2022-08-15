@@ -11,10 +11,13 @@ import loggers
 
 in_builder = os.environ.get('ACI_IMAGE_BUILDER', False)
 in_builder = True if in_builder else False
+builder_version = os.environ.get('ACI_IMAGE_BUILDER_VERSION', 'unknown')
 
 log = loggers.getLogger(__name__)
 
+
 log.info(f'ACI_IMAGE_BUILDER: {in_builder}')
+log.info(f'ACI_IMAGE_BUILDER_VERSION: {builder_version}')
 log.debug(f'in_builder: {in_builder}')
 
 

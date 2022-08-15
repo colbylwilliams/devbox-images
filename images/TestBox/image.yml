@@ -8,4 +8,4 @@ replicaLocations:
   - eastus
   - westeurope
 builder: packer
-buildResourceGroup: GroupTestD
+buildResourceGroup: DevBox-Images

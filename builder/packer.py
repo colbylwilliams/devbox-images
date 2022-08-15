@@ -140,9 +140,20 @@ def build(image):
     if in_builder:
         args.insert(2, '-color=false')
     log.info(f'Running packer command: {" ".join(args)}')
-    proc = subprocess.run(args, capture_output=True, check=True, text=True)
-    log.info(f'\n\n{proc.stdout}')
+    try:
+
+        proc = subprocess.run(args, capture_output=True, check=True, text=True)
+        log.info(f'\n\n{proc.stdout}')
+
+    except subprocess.CalledProcessError as e:
+        if e.stdout:
+            log.info(f'\n\n{e.stdout}')
+
+        log.error(e.stderr if e.stderr else e.stdout if e.stdout else e)
+        error_exit(e.stderr if e.stderr else 'packer build command failed')
+
     log.info(f'Done executing packer build for {image["name"]}')
+
     return proc.returncode
 
 

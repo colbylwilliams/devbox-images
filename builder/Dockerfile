@@ -10,6 +10,7 @@ ARG IMAGE_VERSION
 ARG BUILD_DATE
 
 ENV ACI_IMAGE_BUILDER=1
+ENV ACI_IMAGE_BUILDER_VERSION=$IMAGE_VERSION
 
 LABEL maintainer="Microsoft" \
     org.opencontainers.image.created=$BUILD_DATE \

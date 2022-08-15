@@ -88,7 +88,7 @@ def cli(command, log_command=True):
         error_exit(e.stderr if e.stderr else 'azure cli command failed')
 
     except json.decoder.JSONDecodeError:
-        error_exit('{}: {}'.format('Could decode response json', proc.stderr if proc.stderr else proc.stdout if proc.stdout else proc))
+        error_exit('{}: {}'.format('Could not decode response json', proc.stderr if proc.stderr else proc.stdout if proc.stdout else proc))
 
 
 async def cli_async(command, log_command=True):
@@ -111,7 +111,7 @@ async def cli_async(command, log_command=True):
             resource = json.loads(stdout)
             return resource
         except json.decoder.JSONDecodeError:
-            error_exit('{}: {}'.format('Could decode response json', stderr.decode() if stderr else stdout if stdout else proc))
+            error_exit('{}: {}'.format('Could not decode response json', stderr.decode() if stderr else stdout if stdout else proc))
 
 
 def get_sub():
