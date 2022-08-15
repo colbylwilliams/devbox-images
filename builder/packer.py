@@ -10,6 +10,8 @@ from pathlib import Path
 import azure
 import loggers
 
+AUTO_VARS_FILE = 'vars.auto.pkrvars.json'
+
 is_github = os.environ.get('GITHUB_ACTIONS', False)
 in_builder = os.environ.get('ACI_IMAGE_BUILDER', False)
 
@@ -96,7 +98,7 @@ def save_vars_file(image, sub=None):
         if v in image and image[v]:
             auto_vars[v] = image[v]
 
-    with open(Path(image['path']) / 'vars.auto.pkrvars.json', 'w') as f:
+    with open(Path(image['path']) / AUTO_VARS_FILE, 'w') as f:
         json.dump(auto_vars, f, ensure_ascii=False, indent=4, sort_keys=True)
 
 
@@ -113,7 +115,7 @@ async def save_vars_file_async(image, sub=None):
         if v in image and image[v]:
             auto_vars[v] = image[v]
 
-    with open(Path(image['path']) / 'vars.auto.pkrvars.json', 'w') as f:
+    with open(Path(image['path']) / AUTO_VARS_FILE, 'w') as f:
         json.dump(auto_vars, f, ensure_ascii=False, indent=4, sort_keys=True)
 
 
@@ -188,7 +190,7 @@ def main(img_name):
     if not os.path.isdir(img_dir):
         error_exit(f'Directory for image {img_name} not found at {img_dir}')
 
-    if not os.path.isfile(img_dir / 'vars.auto.pkrvars.json'):
+    if not os.path.isfile(img_dir / AUTO_VARS_FILE):
         error_exit(f'vars.auto.pkrvars.json not found in {img_dir} must execute build.py first')
 
     image = {}

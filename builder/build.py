@@ -41,7 +41,6 @@ def main(imgs, run_build, suffix):
         print("::set-output name=build::{}".format(len(build_imgs) > 0))
 
     for img in build_imgs:
-        is_github and print(f'::group::Build {img["name"]}')
 
         if img['builder'] == 'packer':
             packer.save_vars_file(img)
@@ -50,28 +49,12 @@ def main(imgs, run_build, suffix):
                 packer.execute(img)
 
         elif img['builder'] == 'azure':
-            azure.save_params_files(build_imgs)
+            azure.save_params_file(img)
 
             if run_build:
-                bicep_file = os.path.join(img['path'], 'image.bicep')
-                params_file = '@' + os.path.join(img['path'], 'image.parameters.json')
-
-                existing = azure.cli(['image', 'builder', 'show', '-g', img['gallery']['resourceGroup'], '-n', img['name']])
-                if existing:
-                    log.warning(f'image template {img["name"]} already exists in {img["gallery"]["resourceGroup"]}. deleting')
-                    azure.cli(['image', 'builder', 'delete', '-g', img['gallery']['resourceGroup'], '-n', img['name']])
-
-                log.info(f'Creating image template for {img["name"]}')
-                log.info(f'Deploying bicep template for image template: {bicep_file}')
-                group = azure.cli(['deployment', 'group', 'create', '-n', img['name'], '-g', img['gallery']['resourceGroup'], '-f', bicep_file, '-p', params_file, '--no-prompt'])
-
-                log.info(f'Executing build on image template: {img["name"]}')
-                build = azure.cli(['image', 'builder', 'run', '-g', img['gallery']['resourceGroup'], '-n', img['name']])
-
+                azure.create_run_template(img)
         else:
             error_exit(f'image.yaml for {img["name"]} has an invalid builder property value {img["builder"]}')
-
-        is_github and print(f'::endgroup::')
 
     if not run_build:
         log.warning('skipping build execution because --build | -b was not provided')
@@ -89,22 +72,15 @@ async def process_image_async(img, run_build, suffix):
     if img['build']:
         if img['builder'] == 'packer':
             await packer.save_vars_file_async(img)
+
             if run_build:
                 await packer.execute_async(img)
+
         elif img['builder'] == 'azure':
-            # TODO: async azure parameters file creation
             azure.save_params_file(img)
-            # TODO: async azure cli
+
             if run_build:
-                bicep_file = os.path.join(img['path'], 'image.bicep')
-                params_file = '@' + os.path.join(img['path'], 'image.parameters.json')
-
-                log.info(f'Creating image template for {img["name"]}')
-                log.info(f'Deploying bicep template for image template: {bicep_file}')
-                group = azure.cli(['deployment', 'group', 'create', '-g', img['gallery']['resourceGroup'], '-f', bicep_file, '-p', params_file, '--no-prompt'])
-
-                log.info(f'Executing build on image template: {img["name"]}')
-                build = azure.cli(['image', 'builder', 'run', '-g', img['gallery']['resourceGroup'], '-n', img['name']])
+                await azure.create_run_template_async(img)
         else:
             error_exit(f'image.yaml for {img["name"]} has an invalid builder property value {img["builder"]}')
 

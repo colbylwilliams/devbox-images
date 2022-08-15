@@ -8,6 +8,7 @@ from pathlib import Path
 
 import loggers
 
+IMAGE_PARAMS_FILE = 'image.parameters.json'
 RESOURCE_NOT_FOUND = 'Code: ResourceNotFound'
 
 default_params = [
@@ -30,6 +31,34 @@ def error_exit(message):
     sys.exit(message)
 
 
+def _img_def_show_cmd(image):
+    return ['sig', 'image-definition', 'show', '--only-show-errors', '-g', image['gallery']['resourceGroup'],
+            '-r', image['gallery']['name'], '-i', image['name']]
+
+
+def _img_ver_show_cmd(image):
+    return ['sig', 'image-version', 'show', '--only-show-errors', '-g', image['gallery']['resourceGroup'],
+            '-r', image['gallery']['name'], '-i', image['name'], '-e', image['version']]
+
+
+def _img_def_create_cmd(image):
+    return ['sig', 'image-definition', 'create', '--only-show-errors', '-g', image['gallery']['resourceGroup'],
+            '-r', image['gallery']['name'], '-i', image['name'], '-p', image['publisher'], '-f', image['offer'],
+            '-s', image['sku'], '--os-type', image['os'], '--description', image['description'],
+            '--hyper-v-generation', 'V2', '--features', 'SecurityType=TrustedLaunch']
+
+
+def _img_builder_cmd(image, command):
+    return ['image', 'builder', command, '-g', image['gallery']['resourceGroup'], '-n', image['name']]
+
+
+def _img_builder_deploy_cmd(image):
+    bicep_file = os.path.join(image['path'], 'image.bicep')
+    params_file = '@' + os.path.join(image['path'], IMAGE_PARAMS_FILE)
+    return ['deployment', 'group', 'create', '-n', image['name'], '-g', image['gallery']['resourceGroup'],
+            '-f', bicep_file, '-p', params_file, '--no-prompt']
+
+
 def _parse_command(command):
     if isinstance(command, list):
         args = command
@@ -47,32 +76,6 @@ def _parse_command(command):
         args = [az] + args
 
     return args
-
-
-def save_params_file(image, sub=None):
-    sub = sub if sub else get_sub()
-
-    params = {
-        '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#',
-        'contentVersion': '1.0.0.0',
-        'parameters': {}
-    }
-
-    for v in default_params:
-        if v in image and image[v]:
-            params['parameters'][v] = {
-                'value': image[v]
-            }
-
-    with open(Path(image['path']) / 'image.parameters.json', 'w') as f:
-        json.dump(params, f, ensure_ascii=False, indent=4, sort_keys=True)
-
-
-def save_params_files(images):
-    sub = get_sub()
-
-    for image in images:
-        save_params_file(image, sub)
 
 
 def cli(command):
@@ -129,49 +132,6 @@ def get_sub():
 async def get_sub_async():
     sub = await cli_async('az account show')
     return sub['id']
-
-
-def login():
-    cli('az login')
-
-
-def _img_def_show_cmd(image):
-    return [
-        'sig', 'image-definition', 'show',
-        '--only-show-errors',
-        '-g', image['gallery']['resourceGroup'],
-        '-r', image['gallery']['name'],
-        '-i', image['name']
-    ]
-
-
-def _img_ver_show_cmd(image):
-    return [
-        'sig', 'image-version', 'show',
-        '--only-show-errors',
-        '-g', image['gallery']['resourceGroup'],
-        '-r', image['gallery']['name'],
-        '-i', image['name'],
-        '-e', image['version']
-    ]
-
-
-def _img_def_create_cmd(image):
-    return [
-        'sig', 'image-definition', 'create',
-        '--only-show-errors',
-        '-g', image['gallery']['resourceGroup'],
-        '-r', image['gallery']['name'],
-        '-i', image['name'],
-        '-p', image['publisher'],
-        '-f', image['offer'],
-        '-s', image['sku'],
-        '--os-type', image['os'],
-        # '--os-state', 'Generalized', (default)
-        '--description', image['description'],
-        '--hyper-v-generation', 'V2',
-        '--features', 'SecurityType=TrustedLaunch'
-    ]
 
 
 def ensure_image_def_version(image):
@@ -242,3 +202,55 @@ async def ensure_image_def_version_async(image):
         build = True
 
     return build, imgdef
+
+
+def create_run_template(image):
+    existing = cli(_img_builder_cmd(image, 'show'))
+    if existing:
+        log.warning(f'image template {image["name"]} already exists in {image["gallery"]["resourceGroup"]}. deleting')
+        cli(_img_builder_cmd(image, 'delete'))
+
+    log.info(f'Creating image template for {image["name"]}')
+    group = cli(_img_builder_deploy_cmd(image))
+
+    log.info(f'Executing build on image template: {image["name"]}')
+    build = cli(_img_builder_cmd(image, 'run'))
+
+    return group, build
+
+
+async def create_run_template_async(image):
+    existing = await cli_async(_img_builder_cmd(image, 'show'))
+    if existing:
+        log.warning(f'image template {image["name"]} already exists in {image["gallery"]["resourceGroup"]}. deleting')
+        await cli_async(_img_builder_cmd(image, 'delete'))
+
+    log.info(f'Creating image template for {image["name"]}')
+    group = await cli_async(_img_builder_deploy_cmd(image))
+
+    log.info(f'Executing build on image template: {image["name"]}')
+    build = await cli_async(_img_builder_cmd(image, 'run'))
+
+    return group, build
+
+
+def save_params_file(image):
+    params = {
+        '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#',
+        'contentVersion': '1.0.0.0',
+        'parameters': {}
+    }
+
+    for v in default_params:
+        if v in image and image[v]:
+            params['parameters'][v] = {
+                'value': image[v]
+            }
+
+    with open(Path(image['path']) / IMAGE_PARAMS_FILE, 'w') as f:
+        json.dump(params, f, ensure_ascii=False, indent=4, sort_keys=True)
+
+
+def save_params_files(images):
+    for image in images:
+        save_params_file(image)
