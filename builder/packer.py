@@ -138,7 +138,7 @@ def build(image):
     log.info(f'Executing packer build for {image["name"]}')
     args = _parse_command(['build', '-force', image['path']])
     if in_builder:
-        args.append('-color=false')
+        args.insert(2, '-color=false')
     log.info(f'Running packer command: {" ".join(args)}')
     proc = subprocess.run(args, capture_output=True, check=True, text=True)
     log.info(f'\n\n{proc.stdout}')
@@ -150,7 +150,7 @@ async def build_async(image):
     log.info(f'Executing packer build for {image["name"]}')
     args = _parse_command(['build', '-force', image['path']])
     if in_builder:
-        args.append('-color=false')
+        args.insert(2, '-color=false')
     log.info(f'Running packer command: {" ".join(args)}')
     proc = await asyncio.create_subprocess_exec(*args)
     stdout, stderr = await proc.communicate()
