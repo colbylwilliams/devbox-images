@@ -73,10 +73,14 @@ def cli(command, log_command=True):
     try:
         if log_command:
             log.info(f'Running az cli command: {" ".join(args)}')
+
         proc = subprocess.run(args, capture_output=True, check=True, text=True)
+
         if proc.returncode == 0 and not proc.stdout:
             return None
-        log.info(f'\n\n{proc.stdout}')
+        for line in proc.stdout.splitlines():
+            log.info(line)
+
         resource = json.loads(proc.stdout)
         return resource
 
@@ -96,6 +100,7 @@ async def cli_async(command, log_command=True):
 
     if log_command:
         log.info(f'Running az cli command: {" ".join(args)}')
+
     proc = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await proc.communicate()
 
@@ -106,7 +111,9 @@ async def cli_async(command, log_command=True):
         error_exit(stderr.decode() if stderr else 'azure cli command failed')
 
     if stdout:
-        log.info(f'\n\n{stdout}')
+        for line in stdout.decode().splitlines():
+            log.info(line)
+
         try:
             resource = json.loads(stdout)
             return resource
