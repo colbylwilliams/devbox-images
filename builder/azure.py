@@ -67,11 +67,12 @@ def _parse_command(command):
     return args
 
 
-def cli(command):
+def cli(command, log_command=True):
     args = _parse_command(command)
 
     try:
-        log.info(f'Running az cli command: {" ".join(args)}')
+        if log_command:
+            log.info(f'Running az cli command: {" ".join(args)}')
         proc = subprocess.run(args, capture_output=True, check=True, text=True)
         if proc.returncode == 0 and not proc.stdout:
             return None
@@ -90,11 +91,11 @@ def cli(command):
         error_exit('{}: {}'.format('Could decode response json', proc.stderr if proc.stderr else proc.stdout if proc.stdout else proc))
 
 
-async def cli_async(command):
-
+async def cli_async(command, log_command=True):
     args = _parse_command(command)
 
-    log.info(f'Running az cli command: {" ".join(args)}')
+    if log_command:
+        log.info(f'Running az cli command: {" ".join(args)}')
     proc = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await proc.communicate()
 

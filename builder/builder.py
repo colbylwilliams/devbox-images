@@ -53,7 +53,17 @@ gal = gallery.get()
 img['gallery'] = gal
 
 if in_builder:
-    log.info(f'Logging in to Azure with managed identity')
-    azure.cli('az login --identity --allow-no-subscriptions')
+    az_client_id = os.environ.get('AZURE_CLIENT_ID', None)
+    az_client_secret = os.environ.get('AZURE_CLIENT_SECRET', None)
+    az_tenant_id = os.environ.get('AZURE_TENANT_ID', None)
+
+    if az_client_id and az_client_secret and az_tenant_id:
+        log.info(f'Found credentials for Azure Service Principal')
+        log.info(f'Logging in with Service Principal')
+        azure.cli(f'az login --service-principal -u {az_client_id} -p {az_client_secret} -t {az_tenant_id} --allow-no-subscriptions', log_command=False)
+    else:
+        log.info(f'No credentials for Azure Service Principal')
+        log.info(f'Logging in to Azure with managed identity')
+        azure.cli('az login --identity --allow-no-subscriptions')
 
 build.main([img], run_build=in_builder, suffix=suffix)
