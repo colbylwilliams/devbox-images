@@ -2,10 +2,10 @@ description: Windows 11 Enterprise + M365 Apps + VSCode
 publisher: Contoso
 offer: DevBox
 sku: win11-vscode
-version: 1.0.36
+version: 1.0.37
 os: Windows
 replicaLocations:
   - eastus
   - westeurope
 builder: packer
-buildResourceGroup: GroupTestB
+buildResourceGroup: DevBox-Images

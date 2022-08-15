@@ -10,11 +10,6 @@
 
 # https://www.packer.io/plugins/builders/azure/arm
 source "azure-arm" "vm" {
-  azure_tags = {
-    branch = var.branch
-    build  = timestamp()
-    commit = var.commit
-  }
   skip_create_image                = false
   user_assigned_managed_identities = var.identities # optional
   async_resourcegroup_delete       = true
