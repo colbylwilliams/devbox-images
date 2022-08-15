@@ -5,7 +5,6 @@ from pathlib import Path
 
 timestamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
 
-is_github = os.environ.get('GITHUB_ACTIONS', False)
 in_builder = os.environ.get('ACI_IMAGE_BUILDER', False)
 
 repo = Path('/mnt/repo') if in_builder else Path(__file__).resolve().parent.parent

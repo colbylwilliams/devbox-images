@@ -10,18 +10,7 @@ import loggers
 
 IMAGE_PARAMS_FILE = 'image.parameters.json'
 RESOURCE_NOT_FOUND = 'Code: ResourceNotFound'
-
-default_params = [
-    'name',
-    'location',
-    'version',
-    'tempResourceGroup',
-    'buildResourceGroup',
-    'gallery',
-    'replicaLocations'
-]
-
-is_github = os.environ.get('GITHUB_ACTIONS', False)
+DEFAULT_PARAMS = ['name', 'location', 'version', 'tempResourceGroup', 'buildResourceGroup', 'gallery', 'replicaLocations']
 
 log = loggers.getLogger(__name__)
 
@@ -241,7 +230,7 @@ def save_params_file(image):
         'parameters': {}
     }
 
-    for v in default_params:
+    for v in DEFAULT_PARAMS:
         if v in image and image[v]:
             params['parameters'][v] = {
                 'value': image[v]

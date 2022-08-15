@@ -1,9 +1,6 @@
-import os
 import sys
 
 import loggers
-
-is_github = os.environ.get('GITHUB_ACTIONS', False)
 
 log = loggers.getLogger(__name__)
 
@@ -13,10 +10,10 @@ def error_exit(message):
     sys.exit(message)
 
 
-# simple yaml parser, only supports a single level of nesting and arrays that use the '-' notation
-
-
 def parse(path) -> dict:
+    '''
+    simple yaml parser, only supports a single level of nesting and arrays that use the '-' notation
+    '''
     obj = {}
     with open(path, 'r') as yaml:
         parent_key = None

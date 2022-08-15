@@ -6,15 +6,14 @@ from pathlib import Path
 import loggers
 import syaml
 
+REQUIRED_PROPERTIES = ['publisher', 'offer', 'sku', 'version', 'os', 'replicaLocations', 'builder']
+
+log = loggers.getLogger(__name__)
+
 in_builder = os.environ.get('ACI_IMAGE_BUILDER', False)
-is_github = os.environ.get('GITHUB_ACTIONS', False)
 
 repo = Path('/mnt/repo') if in_builder else Path(__file__).resolve().parent.parent
 images_root = repo / 'images'
-
-required_properties = ['publisher', 'offer', 'sku', 'version', 'os', 'replicaLocations', 'builder']
-
-log = loggers.getLogger(__name__)
 
 
 def error_exit(message):
@@ -24,7 +23,7 @@ def error_exit(message):
 
 def validate(image):
     log.info(f'validating image {image["name"]}')
-    for required_property in required_properties:
+    for required_property in REQUIRED_PROPERTIES:
         if required_property not in image:
             error_exit(f'image.yaml for {image["name"]} is missing required property {required_property}')
         if not image[required_property]:
@@ -35,11 +34,8 @@ def validate(image):
 
 def get(image_name) -> dict:
     '''
-    ### Summary
-    Looks for a directory containing a 'image.yaml' or 'image.yml' file in the /images direcory and returns a dictionary of the contents.
-
-    ### Returns:
-    A dictionary of the contents of the image.yaml file.
+    Looks for a directory containing a 'image.yaml' or 'image.yml' file in the /images direcory and
+    returns a dictionary of the contents.
     '''
     image_dir = images_root / image_name
     log.info(f'Getting image {image_name} from {image_dir}')
@@ -77,11 +73,8 @@ def get(image_name) -> dict:
 
 def all() -> list:
     '''
-    ### Summary
-    Looks for a directories containing a 'image.yaml' or 'image.yml' file in the /images direcory and returns a list of dictionaries of the contents.
-
-    ### Returns:
-    A list of dictionaries with the contents of the image.yaml files.
+    Looks for a directory containing a 'image.yaml' or 'image.yml' file in the /images direcory and
+    returns a dictionary of the contents.
     '''
     images = []
 
@@ -98,6 +91,8 @@ def all() -> list:
 def main(images):
     import json
     imgs = [get(i) for i in images] if images else all()
+
+    is_github = os.environ.get('GITHUB_ACTIONS', False)
 
     if is_github:
         print("::set-output name=images::{}".format(json.dumps({'include': imgs})))

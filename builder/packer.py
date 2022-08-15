@@ -11,28 +11,14 @@ import azure
 import loggers
 
 AUTO_VARS_FILE = 'vars.auto.pkrvars.json'
+DEFAULT_PKR_VARS = ['subscription', 'name', 'location', 'version', 'tempResourceGroup', 'buildResourceGroup',
+                    'gallery', 'replicaLocations', 'repos', 'branch', 'commit']
 
-is_github = os.environ.get('GITHUB_ACTIONS', False)
+log = loggers.getLogger(__name__)
+
 in_builder = os.environ.get('ACI_IMAGE_BUILDER', False)
 
 repo = Path('/mnt/repo') if in_builder else Path(__file__).resolve().parent.parent
-images_root = repo / 'images'
-
-default_pkr_vars = [
-    'subscription',
-    'name',
-    'location',
-    'version',
-    'tempResourceGroup',
-    'buildResourceGroup',
-    'gallery',
-    'replicaLocations',
-    'repos',
-    'branch',
-    'commit'
-]
-
-log = loggers.getLogger(__name__)
 
 
 def error_exit(message):
@@ -67,9 +53,9 @@ def get_vars(image):
         if proc.stdout:
             log.info(f'\n\n{proc.stdout}')
             return [v.strip().split('var.')[1].split(':')[0] for v in proc.stdout.split('\\n') if v.startswith('var.')]
-        return default_pkr_vars
+        return DEFAULT_PKR_VARS
     except subprocess.CalledProcessError:
-        return default_pkr_vars
+        return DEFAULT_PKR_VARS
 
 
 async def get_vars_async(image):
@@ -80,9 +66,9 @@ async def get_vars_async(image):
         if stdout:
             log.info(f'\n\n{stdout}')
             return [v.strip().split('var.')[1].split(':')[0] for v in stdout.decode().split('\\n') if v.startswith('var.')]
-        return default_pkr_vars
+        return DEFAULT_PKR_VARS
     except subprocess.CalledProcessError:
-        return default_pkr_vars
+        return DEFAULT_PKR_VARS
 
 
 def save_vars_file(image, sub=None):
@@ -185,13 +171,13 @@ async def execute_async(image):
 
 
 def main(img_name):
-    img_dir = images_root / img_name
+    img_dir = repo / 'images' / img_name
 
     if not os.path.isdir(img_dir):
         error_exit(f'Directory for image {img_name} not found at {img_dir}')
 
     if not os.path.isfile(img_dir / AUTO_VARS_FILE):
-        error_exit(f'vars.auto.pkrvars.json not found in {img_dir} must execute build.py first')
+        error_exit(f'{AUTO_VARS_FILE} not found in {img_dir} must execute build.py first')
 
     image = {}
     image['name'] = Path(img_dir).name

@@ -11,7 +11,6 @@ import images
 import loggers
 import packer
 
-in_builder = os.environ.get('ACI_IMAGE_BUILDER', False)
 is_github = os.environ.get('GITHUB_ACTIONS', False)
 
 log = loggers.getLogger(__name__)

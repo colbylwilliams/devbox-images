@@ -1,4 +1,3 @@
-import imp
 import os
 import sys
 from pathlib import Path
@@ -6,12 +5,11 @@ from pathlib import Path
 import loggers
 import syaml
 
-is_github = os.environ.get('GITHUB_ACTIONS', False)
+log = loggers.getLogger(__name__)
+
 in_builder = os.environ.get('ACI_IMAGE_BUILDER', False)
 
 repo = Path('/mnt/repo') if in_builder else Path(__file__).resolve().parent.parent
-
-log = loggers.getLogger(__name__)
 
 
 def error_exit(message):
@@ -21,11 +19,7 @@ def error_exit(message):
 
 def get():
     '''
-    ### Summary
     Looks for a 'gallery.yaml' or 'gallery.yml' file in the root of the repository and returns a dictionary of the contents.
-
-    ### Returns:
-    A dictionary of the contents of the gallery.yaml file.
     '''
 
     gallery_yaml = os.path.isfile(os.path.join(repo, 'gallery.yaml'))
