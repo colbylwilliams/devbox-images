@@ -68,7 +68,7 @@ async def process_image_async(img, run_build, suffix):
         img['location'] = imgdef['location']
         img['tempResourceGroup'] = f'{img["gallery"]["name"]}-{img["name"]}-{suffix}'
 
-    if img['build']:
+    if build:
         if img['builder'] == 'packer':
             await packer.save_vars_file_async(img)
 
@@ -89,8 +89,8 @@ async def process_image_async(img, run_build, suffix):
     return img
 
 
-async def main_async(imgs):
-    build_imgs = await asyncio.gather(*[process_image_async(i) for i in imgs])
+async def main_async(imgs, run_build, suffix):
+    build_imgs = await asyncio.gather(*[process_image_async(i, run_build, suffix) for i in imgs])
     # set GitHub output
     if is_github:
         print("::set-output name=matrix::{}".format(json.dumps({'include': build_imgs})))
