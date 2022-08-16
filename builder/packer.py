@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import json
 import os
@@ -12,7 +11,8 @@ import loggers
 
 AUTO_VARS_FILE = 'vars.auto.pkrvars.json'
 DEFAULT_PKR_VARS = ['subscription', 'name', 'location', 'version', 'tempResourceGroup', 'buildResourceGroup',
-                    'gallery', 'replicaLocations', 'repos', 'branch', 'commit']
+                    'gallery', 'replicaLocations', 'keyVault', 'virtualNetwork',  'virtualNetworkSubnet',
+                    'virtualNetworkResourceGroup', 'branch', 'commit']
 
 log = loggers.getLogger(__name__)
 
@@ -166,30 +166,3 @@ def execute(image):
 async def execute_async(image):
     i = await init_async(image)
     return await build_async(image) if i == 0 else i
-
-
-def main(img_name):
-    img_dir = repo / 'images' / img_name
-
-    if not os.path.isdir(img_dir):
-        error_exit(f'Directory for image {img_name} not found at {img_dir}')
-
-    if not os.path.isfile(img_dir / AUTO_VARS_FILE):
-        error_exit(f'{AUTO_VARS_FILE} not found in {img_dir} must execute build.py first')
-
-    image = {}
-    image['name'] = Path(img_dir).name
-    image['path'] = f'{img_dir}'
-
-    execute(image)
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description='builds a single image. assumes the image is already using the build.py without the --packer | -p arg.')
-    parser.add_argument('--image', '-i', required=True, help='name of the image to build')
-
-    args = parser.parse_args()
-
-    img_name = args.image
-    main(img_name)

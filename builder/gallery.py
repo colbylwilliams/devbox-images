@@ -18,9 +18,6 @@ def error_exit(message):
 
 
 def get():
-    '''
-    Looks for a 'gallery.yaml' or 'gallery.yml' file in the root of the repository and returns a dictionary of the contents.
-    '''
 
     gallery_yaml = os.path.isfile(os.path.join(repo, 'gallery.yaml'))
     gallery_yml = os.path.isfile(os.path.join(repo, 'gallery.yml'))

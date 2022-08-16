@@ -5,9 +5,9 @@ import os
 import sys
 from datetime import datetime, timezone
 
-import azure
-import gallery
-import images
+import azure as az
+import gallery as gal
+import image as img
 import loggers
 import packer
 
@@ -21,76 +21,65 @@ def error_exit(message):
     sys.exit(message)
 
 
-def main(imgs, run_build, suffix):
-    for img in imgs:
+def main(names, suffix, skip_build=False):
 
-        build, imgdef = azure.ensure_image_def_version(img)
-        img['build'] = build
+    gallery = gal.get()
+    common = img.get_common()
+    images = [img.get(n, gallery, common, suffix, ensure_azure=True) for n in names] if names else img.all(gallery, common, suffix, ensure_azure=True)
 
-        # if buildResourceGroup is not provided we'll provide a name and location for the resource group
-        if 'buildResourceGroup' not in img or not img['buildResourceGroup']:
-            img['location'] = imgdef['location']
-            img['tempResourceGroup'] = f'{img["gallery"]["name"]}-{img["name"]}-{suffix}'
+    for image in images:
 
-    build_imgs = [i for i in imgs if i['build']]
+        if image['build']:
 
-    # set GitHub output
-    if is_github:
-        print("::set-output name=images::{}".format(json.dumps({'include': build_imgs})))
-        print("::set-output name=build::{}".format(len(build_imgs) > 0))
+            if image['builder'] == 'packer':
+                packer.save_vars_file(image)
 
-    for img in build_imgs:
+                if not skip_build:
+                    packer.execute(image)
 
-        if img['builder'] == 'packer':
-            packer.save_vars_file(img)
+            elif image['builder'] == 'azure':
+                az.save_params_file(image)
 
-            if run_build:
-                packer.execute(img)
+                if not skip_build:
+                    az.create_run_template(image)
+            else:
+                error_exit(f'image.yaml for {image["name"]} has an invalid builder property value {image["builder"]}')
 
-        elif img['builder'] == 'azure':
-            azure.save_params_file(img)
+    if skip_build:
+        log.warning('Skipping build execution because --skip-build was provided')
 
-            if run_build:
-                azure.create_run_template(img)
+
+async def _process_image_async(name, gallery, common, suffix, skip_build):
+
+    image = await img.get_async(name, gallery, common, suffix, ensure_azure=True)
+
+    if image['build']:
+        if image['builder'] == 'packer':
+            await packer.save_vars_file_async(image)
+
+            if not skip_build:
+                await packer.execute_async(image)
+
+        elif image['builder'] == 'azure':
+            az.save_params_file(image)
+
+            if not skip_build:
+                await az.create_run_template_async(image)
         else:
-            error_exit(f'image.yaml for {img["name"]} has an invalid builder property value {img["builder"]}')
+            error_exit(f'image.yaml for {image["name"]} has an invalid builder property value {image["builder"]}')
 
-    if not run_build:
-        log.warning('skipping build execution because --build | -b was not provided')
+    if skip_build:
+        log.warning('Skipping build execution because --skip-build was provided')
 
-
-async def process_image_async(img, run_build, suffix):
-    build, imgdef = await azure.ensure_image_def_version_async(img)
-    img['build'] = build
-
-    # if buildResourceGroup is not provided we'll provide a name and location for the resource group
-    if 'buildResourceGroup' not in img or not img['buildResourceGroup']:
-        img['location'] = imgdef['location']
-        img['tempResourceGroup'] = f'{img["gallery"]["name"]}-{img["name"]}-{suffix}'
-
-    if build:
-        if img['builder'] == 'packer':
-            await packer.save_vars_file_async(img)
-
-            if run_build:
-                await packer.execute_async(img)
-
-        elif img['builder'] == 'azure':
-            azure.save_params_file(img)
-
-            if run_build:
-                await azure.create_run_template_async(img)
-        else:
-            error_exit(f'image.yaml for {img["name"]} has an invalid builder property value {img["builder"]}')
-
-    if not run_build:
-        log.warning('Skipping build execution because --build | -b was not provided')
-
-    return img
+    return image
 
 
-async def main_async(imgs, run_build, suffix):
-    build_imgs = await asyncio.gather(*[process_image_async(i, run_build, suffix) for i in imgs])
+async def main_async(names, suffix, skip_build=False):
+    names = names if names else img.names()
+
+    gallery = gal.get()
+    common = img.get_common()
+    build_imgs = await asyncio.gather(*[_process_image_async(n, gallery, common, suffix, skip_build) for n in names])
     # set GitHub output
     if is_github:
         print("::set-output name=matrix::{}".format(json.dumps({'include': build_imgs})))
@@ -105,22 +94,18 @@ if __name__ == '__main__':
     parser.add_argument('--images', '-i', nargs='*', help='names of images to build. if not specified all images will be')
     parser.add_argument('--changes', '-c', nargs='*', help='paths of the files that changed to determine which images to build. if not specified all images will be built')
     parser.add_argument('--suffix', '-s', help='suffix to append to the resource group name. if not specified, the current time will be used')
-    parser.add_argument('--build', '-b', dest='run_build', action='store_true', help='build images with packer or azure image builder depening on the builder property in the image definition yaml')
+    parser.add_argument('--skip-build', dest='skip_build', action='store_true',
+                        help='skip building images with packer or azure image builder depening on the builder property in the image definition yaml')
 
     args = parser.parse_args()
 
     is_async = args.is_async
-    run_build = args.run_build
+    skip_build = args.skip_build
+    names = args.images if args.images else None
 
     suffix = args.suffix if args.suffix else datetime.now(timezone.utc).strftime('%Y%m%d%H%M')
 
-    gal = gallery.get()
-    imgs = [images.get(i) for i in args.images] if args.images else images.all()
-
-    for img in imgs:
-        img['gallery'] = gal
-
     if is_async:
-        asyncio.run(main_async(imgs, run_build, suffix))
+        asyncio.run(main_async(names, suffix, skip_build))
     else:
-        main(imgs, run_build, suffix)
+        main(names, suffix, skip_build)

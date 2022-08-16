@@ -1,0 +1,13 @@
+# properties in this file are merged with properties in the
+# the individual image.yml file.  individual image.yml values win
+publisher: Contoso
+offer: DevBox
+replicaLocations:
+  - eastus
+  - westeurope
+builder: packer
+buildResourceGroup: DevBox-Images
+keyVault: devboximageskv
+virtualNetwork: devbox-images-vnet
+virtualNetworkSubnet: default
+virtualNetworkResourceGroup: DevBox-Images
