@@ -110,7 +110,8 @@ def _get(image_name, gallery, common=None) -> dict:
     image['gallery'] = gallery
 
     if common:
-        image = common | image
+        common.update(image)
+        image = common
 
     _validate(image)
 

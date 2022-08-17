@@ -9,7 +9,7 @@ on:
     paths:
       - 'images/**'
       - 'scripts/**'
-      # - 'builder/**'
+      - 'builder/**'
       # - '.github/**'
 
 jobs:
