@@ -70,7 +70,7 @@ def validate(image):
     if 'tempResourceGroup' in image and image['tempResourceGroup']:
         if 'location' not in image or not image['location']:
             error_exit(f'image.yaml for {image["name"]} has a tempResourceGroup property but no location property')
-    if 'buildResourceGroup' in image and image['buildResourceGroup']:
+    elif 'buildResourceGroup' in image and image['buildResourceGroup']:
         if 'location' in image and image['location']:
             error_exit(f'image.yaml for {image["name"]} has a buildResourceGroup property and a location property. must not define both')
     else:
@@ -190,8 +190,8 @@ if __name__ == '__main__':
 
     images = [get(i, gallery, common) for i in args.images] if args.images else all(gallery, common)
 
-    import json
-    log.info(f'\n\n{json.dumps(images, indent=2)}\n\n')
+    # import json
+    # log.info(f'\n\n{json.dumps(images, indent=2)}\n\n')
 
     if args.github or os.environ.get('GITHUB_ACTIONS', False):
         import json
