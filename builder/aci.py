@@ -69,26 +69,7 @@ def main(names, params, suffix, skip_build=False):
                 else:
                     group_name = image['buildResourceGroup']
 
-                e_aci = az.cli(['container', 'show', '-g', group_name, '-n', image['name']])
-                if e_aci:
-                    log.warning(f'ACI already exists in resource group {group_name}')
-                    e_group_state = e_aci['instanceView']['state']
-                    log.warning(f'Existing ACI group state: {e_group_state}')
-
-                    e_container_state = e_aci['containers'][0]['instanceView']['currentState']
-                    log.warning(f'Existing ACI container state:\n{json.dumps(e_container_state, indent=4)}')
-
                 group = az.cli(['deployment', 'group', 'create', '-n', image['name'], '-g', group_name, '-f', bicep_file, '-p', params_file, '--no-prompt'])
-
-                # check aci build status
-                aci = az.cli(['container', 'show', '-g', group_name, '-n', image['name']])
-                group_state = aci['instanceView']['state']
-                log.info(f'ACI group state: {group_state}')
-
-                container_state = aci['containers'][0]['instanceView']['currentState']
-                log.info(f'ACI container state:\n{json.dumps(container_state, indent=4)}')
-                # if current_state['state'] == 'Failed' or current_state['state'] == 'Terminated':
-                # restart aci build
 
     if skip_build:
         log.warning('Skipping build execution because --skip-build was provided')
