@@ -117,7 +117,7 @@ if __name__ == '__main__':
     parser.add_argument('--async', '-a', dest='is_async', action='store_true', help='build images asynchronously. because the processes run in parallel, the output is not ordered')
     parser.add_argument('--changes', '-c', nargs='*', help='paths of the files that changed to determine which images to build. if not specified all images will be built')
     parser.add_argument('--suffix', '-s', help='suffix to append to the resource group name. if not specified, the current time will be used')
-    parser.add_argument('--skip-build', dest='skip_build', action='store_true',
+    parser.add_argument('--skip-build', action='store_true',
                         help='skip building images with packer or azure image builder depening on the builder property in the image definition yaml')
 
     parser.add_argument('--subnet-id', '-sni', help='The resource id of a subnet to use for the container instance. If this is not specified, the container instance will not be created in a virtual network and have a public ip address.')
@@ -134,22 +134,17 @@ if __name__ == '__main__':
     client_id = args.client_id
     client_secret = args.client_secret
 
-    if args.repository:
-        repo = repos.parse_url(args.repository)
-        if args.token:
-            repo['token'] = args.token
-        if args.revision:
-            repo['revision'] = args.revision
+    repo = repos.parse_url(args.repository)
 
     params = {
         'subnetId': subnet_id,
         'clientId': client_id,
         'clientSecret': client_secret,
-        'repository': repo['url'].replace('https://', f'https://{repo["token"]}@') if 'token' in repo else repo['url']
+        'repository': repo['url'].replace('https://', f'https://{args.token}@') if args.token else repo['url']
     }
 
-    if repo['revision']:
-        params['revision'] = repo['revision']
+    if args.revision:
+        params['revision'] = args.revision
 
     if args.storage_account:
         params['storageAccount'] = args.storage_account
