@@ -24,7 +24,7 @@ def error_exit(message):
 
 def _save_params_file(image, params):
     params_json = {
-        '$schema': 'https://schema.management.az.com/schemas/2019-04-01/deploymentParameters.json#',
+        '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#',
         'contentVersion': '1.0.0.0',
         'parameters': {}
     }
