@@ -7,8 +7,8 @@ replicaLocations:
   - eastus
   - westeurope
 builder: packer
-buildResourceGroup: DevBox-Images
-keyVault: devboximageskv
-virtualNetwork: devbox-images-vnet
-virtualNetworkSubnet: default
-virtualNetworkResourceGroup: DevBox-Images
+# buildResourceGroup: DevBox-Images
+# keyVault: devboximageskv
+# virtualNetwork: devbox-images-vnet
+# virtualNetworkSubnet: default
+# virtualNetworkResourceGroup: DevBox-Images
