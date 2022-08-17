@@ -137,7 +137,6 @@ if __name__ == '__main__':
     repo = repos.parse_url(args.repository)
 
     params = {
-        'subnetId': subnet_id,
         'clientId': client_id,
         'clientSecret': client_secret,
         'repository': repo['url'].replace('https://', f'https://{args.token}@') if args.token else repo['url']
@@ -145,6 +144,9 @@ if __name__ == '__main__':
 
     if args.revision:
         params['revision'] = args.revision
+
+    if args.subnet_id:
+        params['subnetId'] = args.subnet_id
 
     if args.storage_account:
         params['storageAccount'] = args.storage_account
