@@ -6,11 +6,13 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-import azure
-import build
-import gallery
-import images
+import azure as az
+import gallery as gal
+import image as img
 import loggers
+import repos
+
+BUILDER_PARAMS_FILE = 'builder.parameters.json'
 
 log = loggers.getLogger(__name__)
 
@@ -20,91 +22,86 @@ def error_exit(message):
     sys.exit(message)
 
 
-def main(imgs, run_build, suffix):
-    for img in imgs:
+def _save_params_file(image, params):
+    params_json = {
+        '$schema': 'https://schema.management.az.com/schemas/2019-04-01/deploymentParameters.json#',
+        'contentVersion': '1.0.0.0',
+        'parameters': {}
+    }
 
-        build, imgdef = azure.ensure_image_def_version(img)
-        img['build'] = build
+    params_json['parameters']['image'] = {
+        'value': image['name']
+    }
 
-        # if buildResourceGroup is not provided we'll provide a name and location for the resource group
-        if 'buildResourceGroup' not in img or not img['buildResourceGroup']:
-            img['location'] = imgdef['location']
-            img['tempResourceGroup'] = f'{img["gallery"]["name"]}-{img["name"]}-{suffix}'
-
-    build_imgs = [i for i in imgs if i['build']]
-
-    for img in build_imgs:
-
-        params = {
-            '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#',
-            'contentVersion': '1.0.0.0',
-            'parameters': {}
+    for p in params:
+        params_json['parameters'][p] = {
+            'value': params[p]
         }
 
-        params['parameters']['image'] = {
-            'value': img['name']
-        }
+    with open(Path(image['path']) / BUILDER_PARAMS_FILE, 'w') as f:
+        json.dump(params_json, f, ensure_ascii=False, indent=4, sort_keys=True)
 
-        with open(Path(img['path']) / 'builder.parameters.json', 'w') as f:
-            json.dump(params, f, ensure_ascii=False, indent=4, sort_keys=True)
 
-        if run_build:
-            bicep_file = os.path.join(Path(__file__).resolve().parent, 'builder2.bicep')
-            params_file = '@' + os.path.join(img['path'], 'builder.parameters.json')
+def main(names, params, suffix, skip_build=False):
 
-            if 'tempResourceGroup' in img and img['tempResourceGroup']:
-                group_name = img['tempResourceGroup']
-                group = azure.cli(['group', 'create', '-n', img['tempResourceGroup'], '-l', img['location']])
+    gallery = gal.get()
+    common = img.get_common()
+    images = [img.get(n, gallery, common, suffix, ensure_azure=True) for n in names] if names else img.all(gallery, common, suffix, ensure_azure=True)
+
+    for image in images:
+
+        if image['build']:
+
+            _save_params_file(image, params)
+
+            if not skip_build:
+
+                bicep_file = os.path.join(Path(__file__).resolve().parent, 'builder.bicep')
+                params_file = '@' + os.path.join(image['path'], BUILDER_PARAMS_FILE)
+
+                if 'tempResourceGroup' in image and image['tempResourceGroup']:
+                    group_name = image['tempResourceGroup']
+                    group = az.cli(['group', 'create', '-n', image['tempResourceGroup'], '-l', image['location']])
+                else:
+                    group_name = image['buildResourceGroup']
+
+                group = az.cli(['deployment', 'group', 'create', '-n', image['name'], '-g', group_name, '-f', bicep_file, '-p', params_file, '--no-prompt'])
+
+    if skip_build:
+        log.warning('Skipping build execution because --skip-build was provided')
+
+
+async def _process_image_async(name, params, gallery, common, suffix, skip_build):
+
+    image = await img.get_async(name, gallery, common, suffix, ensure_azure=True)
+
+    if image['build']:
+
+        _save_params_file(image, params)
+
+        if not skip_build:
+
+            bicep_file = os.path.join(Path(__file__).resolve().parent, 'builder.bicep')
+            params_file = '@' + os.path.join(image['path'], BUILDER_PARAMS_FILE)
+
+            if 'tempResourceGroup' in image and image['tempResourceGroup']:
+                group_name = image['tempResourceGroup']
+                group = await az.cli_async(['group', 'create', '-n', image['tempResourceGroup'], '-l', image['location']])
             else:
-                group_name = img['buildResourceGroup']
+                group_name = image['buildResourceGroup']
 
-            group = azure.cli(['deployment', 'group', 'create', '-n', img['name'], '-g', group_name, '-f', bicep_file, '-p', params_file, '--no-prompt'])
+            group = await az.cli_async(['deployment', 'group', 'create', '-n', image['name'], '-g', group_name, '-f', bicep_file, '-p', params_file, '--no-prompt'])
 
-    if not run_build:
-        log.warning('skipping build execution because --build | -b was not provided')
-
-
-async def process_image_async(img, run_build, suffix):
-    build, imgdef = await azure.ensure_image_def_version_async(img)
-    img['build'] = build
-
-    # if buildResourceGroup is not provided we'll provide a name and location for the resource group
-    if 'buildResourceGroup' not in img or not img['buildResourceGroup']:
-        img['location'] = imgdef['location']
-        img['tempResourceGroup'] = f'{img["gallery"]["name"]}-{img["name"]}-{suffix}'
-
-    if build:
-        params = {
-            '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#',
-            'contentVersion': '1.0.0.0',
-            'parameters': {}
-        }
-
-        params['parameters']['image'] = {
-            'value': img['name']
-        }
-
-        with open(Path(img['path']) / 'builder.parameters.json', 'w') as f:
-            json.dump(params, f, ensure_ascii=False, indent=4, sort_keys=True)
-
-        if run_build:
-            bicep_file = os.path.join(Path(__file__).resolve().parent, 'builder2.bicep')
-            params_file = '@' + os.path.join(img['path'], 'builder.parameters.json')
-
-            if 'tempResourceGroup' in img and img['tempResourceGroup']:
-                group_name = img['tempResourceGroup']
-                group = await azure.cli_async(['group', 'create', '-n', img['tempResourceGroup'], '-l', img['location']])
-            else:
-                group_name = img['buildResourceGroup']
-
-            group = await azure.cli_async(['deployment', 'group', 'create', '-n', img['name'], '-g', group_name, '-f', bicep_file, '-p', params_file, '--no-prompt'])
-
-    if not run_build:
-        log.warning('skipping build execution because --build | -b was not provided')
+    if skip_build:
+        log.warning('Skipping build execution because --skip-build was provided')
 
 
-async def main_async(imgs, run_build, suffix):
-    build_imgs = await asyncio.gather(*[process_image_async(i, run_build, suffix) for i in imgs])
+async def main_async(names, params, suffix, skip_build=False):
+    names = names if names else img.names()
+
+    gallery = gal.get()
+    common = img.get_common()
+    build_imgs = await asyncio.gather(*[_process_image_async(n, params, gallery, common, suffix, skip_build) for n in names])
 
 
 if __name__ == '__main__':
@@ -116,22 +113,43 @@ if __name__ == '__main__':
     parser.add_argument('--async', '-a', dest='is_async', action='store_true', help='build images asynchronously. because the processes run in parallel, the output is not ordered')
     parser.add_argument('--changes', '-c', nargs='*', help='paths of the files that changed to determine which images to build. if not specified all images will be built')
     parser.add_argument('--suffix', '-s', help='suffix to append to the resource group name. if not specified, the current time will be used')
-    parser.add_argument('--build', '-b', dest='run_build', action='store_true', help='build images with packer or azure image builder depening on the builder property in the image definition yaml')
+    parser.add_argument('--skip-build', dest='skip_build', action='store_true',
+                        help='skip building images with packer or azure image builder depening on the builder property in the image definition yaml')
+
+    parser.add_argument('--subnet-id', '-sni', help='The resource id of a subnet to use for the container instance. If this is not specified, the container instance will not be created in a virtual network and have a public ip address.')
+    parser.add_argument('--storage-account', '-sa', help='The name of an existing storage account to use with the container instance. If not specified, the container instance will not mount a persistant file share.')
+    parser.add_argument('--client-id', '-cid', required=True, help='The client (app) id for the service principal to use for authentication.')
+    parser.add_argument('--client-secret', '-cs', required=True, help='The secret for the service principal to use for authentication.')
+    parser.add_argument('--repository', '-r', required=True, help='The git repository that contains your image.yml and buiild scripts.')
+    parser.add_argument('--token', '-t', help='The PAT token to use when cloning the git repository.')
 
     args = parser.parse_args()
 
+    subnet_id = args.subnet_id
+    client_id = args.client_id
+    client_secret = args.client_secret
+    storage_account = args.storage_account
+
+    if args.repository:
+        repo = repos.parse_url(args.repository)
+        if args.token:
+            repo['token'] = args.token
+
+    params = {
+        'subnetId': subnet_id,
+        'storageAccount': storage_account,
+        'clientId': client_id,
+        'clientSecret': client_secret,
+        'repository': repo['gitUrl'].replace('https://', f'https://{repo["token"]}@') if 'token' in repo else repo['gitUrl']
+    }
+
     is_async = args.is_async
-    run_build = args.run_build
+    skip_build = args.skip_build
+    names = args.images if args.images else None
 
     suffix = args.suffix if args.suffix else datetime.now(timezone.utc).strftime('%Y%m%d%H%M')
 
-    gal = gallery.get()
-    imgs = [images.get(i) for i in args.images] if args.images else images.all()
-
-    for img in imgs:
-        img['gallery'] = gal
-
     if is_async:
-        asyncio.run(main_async(imgs, run_build, suffix))
+        asyncio.run(main_async(names, params, suffix, skip_build))
     else:
-        main(imgs, run_build, suffix)
+        main(names, params, suffix, skip_build)

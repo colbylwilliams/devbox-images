@@ -1,23 +1,61 @@
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
+@description('Container image to deploy. Should be of the form repoName/imagename:tag for images stored in public Docker Hub, or a fully qualified URI for other registries.')
 param container string = 'ghcr.io/colbylwilliams/devbox-images/builder'
-param repository string = 'https://github.com/colbylwilliams/devbox-images.git'
 
-param deployStorage bool = true
+@secure()
+@description('The git repository that contains your image.yml and buiild scripts.')
+param repository string
 
+@description('The branch of the git repository specified in the repository parameter.')
+param branch string = 'main'
+
+@description('The name of the image to build. This should match the name of a folder inside the /images folder in your repository.')
+param image string
+
+@description('The client (app) id for the service principal to use for authentication.')
+param clientId string
+
+@secure()
+@description('The secret for the service principal to use for authentication.')
+param clientSecret string
+
+@description('The name of an existing storage account to use with the container instance. If not specified, the container instance will not mount a persistant file share.')
+param storageAccount string
+
+@description('The resource id of a subnet to use for the container instance. If this is not specified, the container instance will not be created in a virtual network and have a public ip address.')
+param subnetId string
+
+@description('Packer variables in the form of key: value pairs to forward to packer when executing packer build the container instance.')
 param packerVars object = {}
 
-var environmentVars = [for kv in items(packerVars): {
+var defaultEnvironmentVars = [
+  { name: 'BUILD_IMAGE_NAME'
+    value: image }
+  { name: 'AZURE_TENANT_ID'
+    value: tenant().tenantId }
+  { name: 'AZURE_CLIENT_ID'
+    value: clientId }
+  { name: 'AZURE_CLIENT_SECRET'
+    secureValue: clientSecret }
+]
+
+var packerEnvironmentVars = [for kv in items(packerVars): {
   name: 'PKR_VAR_${kv.key}'
   value: kv.value
 }]
 
-param images array
+var environmentVars = empty(packerEnvironmentVars) ? defaultEnvironmentVars : concat(defaultEnvironmentVars, packerEnvironmentVars)
 
-param identity string = '/subscriptions/e5f715ae-6c72-4a5c-87c8-495590c34828/resourcegroups/Identities/providers/Microsoft.ManagedIdentity/userAssignedIdentities/Contoso'
-
-var storageName = take('s${uniqueString(resourceGroup().id)}', 24)
+var repoVolume = {
+  name: 'repo'
+  gitRepo: {
+    repository: repository
+    directory: '.'
+    revision: branch
+  }
+}
 
 var repoVolumeMount = {
   name: 'repo'
@@ -25,46 +63,35 @@ var repoVolumeMount = {
   readOnly: false
 }
 
-var repoVolume = {
-  name: 'repo'
-  gitRepo: {
-    repository: repository
-    directory: '.'
-    revision: 'main'
-  }
+resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' existing = if (!empty(storageAccount)) {
+  name: storageAccount
 }
 
-resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' = if (deployStorage && !empty(images)) {
-  name: storageName
-  location: location
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-  resource fileServices 'fileServices' = {
-    name: 'default'
-    resource fileShare 'shares' = [for image in images: {
-      name: toLower(image)
-    }]
-  }
+resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2021-09-01' existing = if (!empty(storageAccount)) {
+  name: 'default'
+  parent: storage
 }
 
-resource group 'Microsoft.ContainerInstance/containerGroups@2021-10-01' = [for image in images: if (!empty(images)) {
+resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-09-01' = if (!empty(storageAccount)) {
+  name: toLower(image)
+  parent: fileService
+}
+
+resource group 'Microsoft.ContainerInstance/containerGroups@2021-10-01' = {
   name: image
   location: location
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${identity}': {}
-    }
-  }
   properties: {
+    subnetIds: empty(subnetId) ? [] : [
+      {
+        id: subnetId
+      }
+    ]
     containers: [
       {
         name: toLower(image)
         properties: {
           image: container
-          ports: [
+          ports: !empty(subnetId) ? [] : [
             {
               port: 80
               protocol: 'TCP'
@@ -76,40 +103,21 @@ resource group 'Microsoft.ContainerInstance/containerGroups@2021-10-01' = [for i
               memoryInGB: 2
             }
           }
-          volumeMounts: !deployStorage ? [
+          volumeMounts: empty(storageAccount) ? [ repoVolumeMount ] : [
             repoVolumeMount
-          ] : concat([ [ repoVolumeMount ], [ {
-                name: 'storage'
-                mountPath: '/mnt/storage'
-                readOnly: false
-              } ] ])
-          environmentVariables: empty(packerVars) ? [
             {
-              name: 'BUILD_IMAGE_NAME'
-              value: image
+              name: 'storage'
+              mountPath: '/mnt/storage'
+              readOnly: false
             }
-            {
-              name: 'MOUNT_STORAGE'
-              value: '${deployStorage}'
-            }
-          ] : concat(
-            [
-              {
-                name: 'BUILD_IMAGE_NAME'
-                value: image
-              }
-              {
-                name: 'MOUNT_STORAGE'
-                value: '${deployStorage}'
-              }
-            ], environmentVars
-          )
+          ]
+          environmentVariables: environmentVars
         }
       }
     ]
     osType: 'Linux'
     restartPolicy: 'Never'
-    ipAddress: {
+    ipAddress: !empty(subnetId) ? {} : {
       type: 'Public'
       ports: [
         {
@@ -118,19 +126,19 @@ resource group 'Microsoft.ContainerInstance/containerGroups@2021-10-01' = [for i
         }
       ]
     }
-    volumes: !deployStorage ? [
+    volumes: empty(storageAccount) ? [ repoVolume ] : [
       repoVolume
-    ] : concat([ repoVolume ], [ {
-          name: 'storage'
-          azureFile: {
-            shareName: toLower(image)
-            storageAccountName: storageName
-            storageAccountKey: storage.listKeys().keys[0].value
-            readOnly: false
-          }
-        } ])
+      {
+        name: 'storage'
+        azureFile: {
+          shareName: fileShare.name
+          storageAccountName: storage.name
+          storageAccountKey: storage.listKeys().keys[0].value
+          readOnly: false
+        }
+      }
+    ]
   }
-}]
+}
 
-// output containerIPv4Address string = group.properties.ipAddress.ip
-// https://github.com/Azure/azure-quickstart-templates/blob/master/quickstarts/microsoft.containerinstance/aci-vnet/main.bicep
+output logs string = 'az container logs -g ${resourceGroup().name} -n ${image}'
