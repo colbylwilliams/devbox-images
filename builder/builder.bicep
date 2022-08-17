@@ -69,10 +69,10 @@ var repoVolumeMount = {
 }
 
 resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' existing = if (!empty(storageAccount)) {
-  name: storageAccount
-  resource fileServices 'fileServices' = if (!empty(storageAccount)) {
+  name: empty(storageAccount) ? 'storageAccount' : storageAccount
+  resource fileServices 'fileServices' = {
     name: 'default'
-    resource fileShare 'shares' = if (!empty(storageAccount)) {
+    resource fileShare 'shares' = {
       name: toLower(image)
     }
   }
