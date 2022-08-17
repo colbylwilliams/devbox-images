@@ -19,17 +19,26 @@ jobs:
 
     if: "!contains(join(github.event.commits.*.message), '+nobuild')"
 
+    env:
+      STORAGE_ACCOUNT: devboximagesstorage
+      SUBNET_ID: /subscriptions/e5f715ae-6c72-4a5c-87c8-495590c34828/resourceGroups/DevBox-Images/providers/Microsoft.Network/virtualNetworks/devbox-images-vnet/subnets/builders
+
     steps:
       - uses: actions/checkout@v2
 
+      # - name: Login to Azure
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # OR
+
       - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        run: az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
 
       - name: Deploy Build ACI Containers
         id: images
-        run: python "./builder/aci.py" --build --async
+        run: python "./builder/aci.py" --async --repository "${{ github.repositoryUrl }}" --token "${{ github.token }}" --client-id "${{ secrets.AZURE_CLIENT_ID }}" --client-secret "${{ secrets.AZURE_CLIENT_SECRET }}" --storage-account "${{ env.STORAGE_ACCOUNT }}" --subnet-id "${{ env.SUBNET_ID }}"
 
   # prepare:
   #   # runs-on: windows-latest
@@ -46,7 +55,7 @@ jobs:
 
   #     - name: Get Image Definitions
   #       id: images
-  #       run: python "./builder/images.py"
+  #       run: python "./builder/image.py"
 
   # build:
   #   needs: prepare
@@ -69,4 +78,4 @@ jobs:
   #         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
   #     - name: Build ${{ matrix.name }} with ${{ matrix.builder }}
-  #       run: python "./builder/build.py" --suffix ${{ github.run_number }} --images ${{ matrix.name }} --build
+  #       run: python "./builder/build.py" --suffix ${{ github.run_number }} --images ${{ matrix.name }}

@@ -1,14 +1,4 @@
 
-
-import json
-
-test1 = 'https://github.com/colbylwilliams/devbox-images.git'
-test2 = 'git@github.com:colbylwilliams/devbox-images.git'
-test3 = 'https://dev.azure.com/colbylwilliams/MyProject/_git/devbox-images'
-test4 = 'https://colbylwilliams.visualstudio.com/DefaultCollection/MyProject/_git/devbox-images'
-test5 = 'https://colbylwilliams@dev.azure.com/colbylwilliams/MyProject/_git/devbox-images'
-
-
 def _is_github(url) -> bool:
     return 'github.com' in url.lower()
 
@@ -19,13 +9,14 @@ def _is_devops(url) -> bool:
 
 def _parse_github_url(url) -> dict:
     # examples:
+    # git://github.com/codertocat/hello-world.git
     # https://github.com/colbylwilliams/devbox-images.git
     # git@github.com:colbylwilliams/devbox-images.git
 
     if not _is_github(url):
         raise ValueError(f'{url} is not a valid GitHub repository url')
 
-    url = url.lower().replace('git@', 'https://').replace('github.com:', 'github.com/')
+    url = url.lower().replace('git@', 'https://').replace('git://', 'https://').replace('github.com:', 'github.com/')
 
     if url.endswith('.git'):
         url = url[:-4]
@@ -104,8 +95,19 @@ def parse_url(url) -> dict:
     raise ValueError(f'{url} is not a valid repository url')
 
 
-# print('')
-# for test in [test1, test2, test3, test4, test5]:
-#     repo = parse_url(test)
-#     print(json.dumps(repo, indent=4))
-#     print('')
+if __name__ == '__main__':
+
+    import json
+
+    test0 = 'git://github.com/codertocat/hello-world.git'
+    test1 = 'https://github.com/colbylwilliams/devbox-images.git'
+    test2 = 'git@github.com:colbylwilliams/devbox-images.git'
+    test3 = 'https://dev.azure.com/colbylwilliams/MyProject/_git/devbox-images'
+    test4 = 'https://colbylwilliams.visualstudio.com/DefaultCollection/MyProject/_git/devbox-images'
+    test5 = 'https://colbylwilliams@dev.azure.com/colbylwilliams/MyProject/_git/devbox-images'
+
+    print('')
+    for test in [test0, test1, test2, test3, test4, test5]:
+        repo = parse_url(test)
+        print(json.dumps(repo, indent=4))
+    print('')
