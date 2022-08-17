@@ -125,6 +125,7 @@ if __name__ == '__main__':
     parser.add_argument('--client-id', '-cid', required=True, help='The client (app) id for the service principal to use for authentication.')
     parser.add_argument('--client-secret', '-cs', required=True, help='The secret for the service principal to use for authentication.')
     parser.add_argument('--repository', '-r', required=True, help='The git repository that contains your image.yml and buiild scripts.')
+    parser.add_argument('--revision', '-b', required=True, help='The git repository revision that contains your image.yml and buiild scripts.')
     parser.add_argument('--token', '-t', help='The PAT token to use when cloning the git repository.')
 
     args = parser.parse_args()
@@ -132,20 +133,26 @@ if __name__ == '__main__':
     subnet_id = args.subnet_id
     client_id = args.client_id
     client_secret = args.client_secret
-    storage_account = args.storage_account
 
     if args.repository:
         repo = repos.parse_url(args.repository)
         if args.token:
             repo['token'] = args.token
+        if args.revision:
+            repo['revision'] = args.revision
 
     params = {
         'subnetId': subnet_id,
-        'storageAccount': storage_account,
         'clientId': client_id,
         'clientSecret': client_secret,
-        'repository': repo['gitUrl'].replace('https://', f'https://{repo["token"]}@') if 'token' in repo else repo['gitUrl']
+        'repository': repo['url'].replace('https://', f'https://{repo["token"]}@') if 'token' in repo else repo['url']
     }
+
+    if repo['revision']:
+        params['revision'] = repo['revision']
+
+    if args.storage_account:
+        params['storageAccount'] = args.storage_account
 
     is_async = args.is_async
     skip_build = args.skip_build
