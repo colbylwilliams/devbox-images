@@ -117,7 +117,7 @@ resource group 'Microsoft.ContainerInstance/containerGroups@2021-10-01' = {
     ]
     osType: 'Linux'
     restartPolicy: 'Never'
-    ipAddress: !empty(subnetId) ? {} : {
+    ipAddress: !empty(subnetId) ? json('null') : {
       type: 'Public'
       ports: [
         {

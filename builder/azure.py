@@ -101,24 +101,29 @@ async def cli_async(command, log_command=True):
     if log_command:
         log.info(f'Running az cli command: {" ".join(args)}')
 
-    proc = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-    stdout, stderr = await proc.communicate()
+    try:
+        proc = await asyncio.create_subprocess_exec(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        stdout, stderr = await proc.communicate()
 
-    if stderr and RESOURCE_NOT_FOUND in stderr.decode():
-        return None
+        if stderr and RESOURCE_NOT_FOUND in stderr.decode():
+            return None
 
-    if proc.returncode != 0:
-        error_exit(stderr.decode() if stderr else 'azure cli command failed')
+        if proc.returncode != 0:
+            error_exit(stderr.decode() if stderr else 'azure cli command failed')
 
-    if stdout:
-        for line in stdout.decode().splitlines():
-            log.info(line)
+        if stdout:
+            for line in stdout.decode().splitlines():
+                log.info(line)
 
-        try:
-            resource = json.loads(stdout)
-            return resource
-        except json.decoder.JSONDecodeError:
-            error_exit('{}: {}'.format('Could not decode response json', stderr.decode() if stderr else stdout if stdout else proc))
+            try:
+                resource = json.loads(stdout)
+                return resource
+            except json.decoder.JSONDecodeError:
+                error_exit('{}: {}'.format('Could not decode response json', stderr.decode() if stderr else stdout if stdout else proc))
+
+    except SystemExit as e:
+
+        error_exit(e.code if e.code else 'azure cli command failed')
 
 
 def get_sub():
