@@ -2,5 +2,5 @@ description: Windows 11 Enterprise + M365 Apps
 publisher: Contoso
 offer: DevBox
 sku: win11-testbox
-version: 1.0.8
+version: 1.0.9
 os: Windows

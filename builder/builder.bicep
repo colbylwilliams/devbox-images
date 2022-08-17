@@ -27,6 +27,11 @@ param storageAccount string
 @description('The resource id of a subnet to use for the container instance. If this is not specified, the container instance will not be created in a virtual network and have a public ip address.')
 param subnetId string
 
+@description('The version of the image to build.')
+param version string = 'latest'
+
+param timestamp string = utcNow()
+
 @description('Packer variables in the form of key: value pairs to forward to packer when executing packer build the container instance.')
 param packerVars object = {}
 
@@ -80,6 +85,10 @@ resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-0
 resource group 'Microsoft.ContainerInstance/containerGroups@2021-10-01' = {
   name: image
   location: location
+  tags: {
+    version: version
+    timestamp: timestamp
+  }
   properties: {
     subnetIds: empty(subnetId) ? [] : [
       {
