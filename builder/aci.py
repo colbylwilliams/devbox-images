@@ -101,7 +101,7 @@ async def _process_image_async(name, params, gallery, common, suffix, skip_build
 
 
 async def main_async(names, params, suffix, skip_build=False):
-    names = names if names else img.names()
+    names = names if names else img.image_names()
 
     gallery = gal.get()
     common = img.get_common()

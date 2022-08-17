@@ -1,5 +1,5 @@
 import argparse
-import asyncio
+import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -47,13 +47,16 @@ def get_common() -> dict:
             error_exit(f'{key} is not a permitted property in {images_path}')
 
     log.info(f'Found common image properties in {images_path}')
-    log.info(f'Common image properties: {common}')
+    log.info(f'Common image properties:')
+    for line in json.dumps(common, indent=4).splitlines():
+        log.info(line)
 
     return common
 
 
 def _validate(image):
-    log.info(f'validating image {image["name"]}')
+    log.info(f'Validating image {image["name"]}')
+
     for required_property in REQUIRED_PROPERTIES:
         if required_property not in image:
             error_exit(f'image.yaml for {image["name"]} is missing required property {required_property}')
@@ -61,9 +64,12 @@ def _validate(image):
             error_exit(f'image.yaml for {image["name"]} is missing a value for required property {required_property}')
     if image['builder'] not in ['packer', 'azure']:
         error_exit(f'image.yaml for {image["name"]} has an invalid builder property value {image["builder"]}')
+    log.info(f'Image {image["name"]} passed validation')
 
 
 def validate(image):
+    log.info(f'Validating image {image["name"]}')
+
     if 'buildResourceGroup' in image and image['buildResourceGroup'] and 'tempResourceGroup' in image and image['tempResourceGroup']:
         error_exit(f'image.yaml for {image["name"]} has values for both buildResourceGroup and tempResourceGroup properties. must only define one')
 
@@ -75,6 +81,8 @@ def validate(image):
             error_exit(f'image.yaml for {image["name"]} has a buildResourceGroup property and a location property. must not define both')
     else:
         error_exit(f'image.yaml for {image["name"]} has no value for buildResourceGroup property and no value for tempResourceGroup property. must define one')
+
+    log.info(f'Image {image["name"]} passed validation')
 
 
 def _get(image_name, gallery, common=None) -> dict:
@@ -110,8 +118,9 @@ def _get(image_name, gallery, common=None) -> dict:
     image['gallery'] = gallery
 
     if common:
-        common.update(image)
-        image = common
+        temp = common.copy()
+        temp.update(image)
+        image = temp.copy()
 
     _validate(image)
 
@@ -133,6 +142,10 @@ def get(image_name, gallery, common=None, suffix=None, ensure_azure=False) -> di
             image['location'] = image_def['location']
             image['tempResourceGroup'] = f'{image["gallery"]["name"]}-{image["name"]}-{suffix}'
 
+        log.info(f'Image {image["name"]} properties:')
+        for line in json.dumps(image, indent=4).splitlines():
+            log.info(line)
+
         validate(image)
 
     return image
@@ -153,6 +166,10 @@ async def get_async(image_name, gallery, common=None, suffix=None, ensure_azure=
             image['location'] = image_def['location']
             image['tempResourceGroup'] = f'{image["gallery"]["name"]}-{image["name"]}-{suffix}'
 
+        log.info(f'Image {image["name"]} properties:')
+        for line in json.dumps(image, indent=4).splitlines():
+            log.info(line)
+
         validate(image)
 
     return image
@@ -160,11 +177,14 @@ async def get_async(image_name, gallery, common=None, suffix=None, ensure_azure=
 
 def all(gallery, common=None, suffix=None, ensure_azure=False) -> list:
     common = common if common else get_common()
-    images = [get(i, gallery, common, suffix, ensure_azure) for i in names()]
+    names = image_names()
+    for name in names:
+        log.warning(f'Getting image {name}')
+    images = [get(i, gallery, common, suffix, ensure_azure) for i in image_names()]
     return images
 
 
-def names() -> list:
+def image_names() -> list:
     names = []
 
     # walk the images directory and find all the image.yml/image.yaml files
@@ -189,9 +209,7 @@ if __name__ == '__main__':
     common = get_common()
 
     images = [get(i, gallery, common) for i in args.images] if args.images else all(gallery, common)
-
-    # import json
-    # log.info(f'\n\n{json.dumps(images, indent=2)}\n\n')
+    # images = [get(i, gallery, common, suffix, ensure_azure=True) for i in args.images] if args.images else all(gallery, common, suffix, ensure_azure=True)
 
     if args.github or os.environ.get('GITHUB_ACTIONS', False):
         import json

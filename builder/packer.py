@@ -84,6 +84,10 @@ def save_vars_file(image, sub=None):
         if v in image and image[v]:
             auto_vars[v] = image[v]
 
+    log.info(f'Saving {image["name"]} packer auto variables:')
+    for line in json.dumps(auto_vars, indent=4).splitlines():
+        log.info(line)
+
     with open(Path(image['path']) / AUTO_VARS_FILE, 'w') as f:
         json.dump(auto_vars, f, ensure_ascii=False, indent=4, sort_keys=True)
 
@@ -100,6 +104,10 @@ async def save_vars_file_async(image, sub=None):
     for v in pkr_vars:
         if v in image and image[v]:
             auto_vars[v] = image[v]
+
+    log.info(f'Saving {image["name"]} packer auto variables:')
+    for line in json.dumps(auto_vars, indent=4).splitlines():
+        log.info(line)
 
     with open(Path(image['path']) / AUTO_VARS_FILE, 'w') as f:
         json.dump(auto_vars, f, ensure_ascii=False, indent=4, sort_keys=True)
