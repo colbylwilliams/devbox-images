@@ -30,7 +30,7 @@ source "azure-arm" "vm" {
   managed_image_name                = var.name
   managed_image_resource_group_name = var.gallery.resourceGroup
   # packer creates a temporary resource group
-  subscription_id          = var subscription
+  subscription_id          = var.subscription
   location                 = var.location
   temp_resource_group_name = var.tempResourceGroup
   # OR use an existing resource group
