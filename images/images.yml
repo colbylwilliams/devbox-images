@@ -34,7 +34,7 @@ offer: DevBox
 replicaLocations:
   - eastus
   - westeurope
-buildResourceGroup: DevBox-Images
+buildResourceGroup: Contoso-Images
 keyVault: contosoimageskv
 virtualNetwork: contoso-images-vnet
 virtualNetworkSubnet: default
