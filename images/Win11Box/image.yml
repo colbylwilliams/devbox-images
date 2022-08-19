@@ -1,8 +1,4 @@
-# This file contains common properties to be shared across all individual image's image.yml files
-# If an individual image's image.yml file also contains a value for property set in this file, the value in the
-# that image's image.yml file will overwrite the value in this file
-
-#  Optional properties:
+#  Required properties: (some may also be set in the common images.yaml file)
 #
 # - publisher: (string)
 #       The name of the gallery image definition publisher.
@@ -10,6 +6,17 @@
 #       The name of the gallery image definition offer
 # - replicaLocations: (array using - notation)
 #       The target regions where the Image Version is going to be replicated to
+# - sku: (string)
+#       The name of the gallery image definition SKU
+# - version: (string)
+#       Version number for the image (ex. 1.0.0)
+# - os: (string)
+#       Windows or Linux.  For Dev Box, only Windows is supported
+
+#  Optional properties: (may also be set in the common images.yaml file)
+#
+# - description: (string)
+#       The description of this gallery image definition resource
 # - builder: (string)
 #       Builder to use.  packer or azure. If not specified, packer is used
 # - buildResourceGroup: (string)
@@ -28,15 +35,9 @@
 #       Subscription ID (GUID) of the subscription to use. If not set, the builder will use the default subscription of
 #       the authenticated user of service principal
 
-builder: packer
+description: Windows 11 Enterprise + M365 Apps
 publisher: Contoso
 offer: DevBox
-replicaLocations:
-  - eastus
-  - westeurope
-buildResourceGroup: DevBox-Images
-keyVault: contosoimageskv
-virtualNetwork: contoso-images-vnet
-virtualNetworkSubnet: default
-virtualNetworkResourceGroup: Contoso-Images
-subscription: e5f715ae-6c72-4a5c-87c8-495590c34828
+sku: win11-box
+version: 1.0.0
+os: Windows
