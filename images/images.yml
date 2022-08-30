@@ -34,9 +34,9 @@ offer: DevBox
 replicaLocations:
   - eastus
   - westeurope
-buildResourceGroup: Contoso-Images
-keyVault: contosoimageskv
-virtualNetwork: contoso-images-vnet
+buildResourceGroup: DevBox-Images-Temp
+keyVault: colby-foo-b-kv
+virtualNetwork: colby-foo_b-vnet
 virtualNetworkSubnet: default
-virtualNetworkResourceGroup: Contoso-Images
+virtualNetworkResourceGroup: DevBox-Images-Temp
 subscription: e5f715ae-6c72-4a5c-87c8-495590c34828

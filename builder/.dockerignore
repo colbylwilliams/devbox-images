@@ -1,7 +1,10 @@
 .dockerignore
 
+templates
+templates/
+
 builder.bicep
-builder2.bicep
+builder_sandbox.bicep
 
 aci.py
 repos.py
