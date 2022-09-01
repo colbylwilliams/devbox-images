@@ -3,7 +3,7 @@
 
 @minLength(36)
 @maxLength(36)
-@description('The principal id of the Service Principal to assign permissions to the Project.')
+@description('The principal id of the User to assign permissions to the Project.')
 param principalId string
 
 @minLength(3)
@@ -12,7 +12,7 @@ param principalId string
 param projectName string
 
 @allowed([ 'ProjectAdmin', 'DevBoxUser' ])
-@description('The Role to assign.')
+@description('The Role assignment to assign the user. Defaults to DevBoxUser')
 param role string = 'DevBoxUser'
 
 @allowed([ 'Device', 'ForeignGroup', 'Group', 'ServicePrincipal', 'User' ])
