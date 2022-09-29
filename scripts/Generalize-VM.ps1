@@ -14,7 +14,7 @@ Write-Output '>>> Sysprepping VM ...'
 Remove-Item $Env:SystemRoot\system32\Sysprep\unattend.xml -Force -ErrorAction SilentlyContinue
 
 # https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/sysprep-command-line-options?view=windows-11
-& $Env:SystemRoot\System32\Sysprep\Sysprep.exe /oobe /generalize /quiet /quit
+& $Env:SystemRoot\System32\Sysprep\Sysprep.exe /oobe /mode:vm /generalize /quiet /quit
 
 while ($true) {
 
