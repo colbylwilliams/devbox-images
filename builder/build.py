@@ -78,6 +78,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--subnet-id', '-sni', help='The resource id of a subnet to use for the container instance. If this is not specified, the container instance will not be created in a virtual network and have a public ip address.')
     parser.add_argument('--storage-account', '-sa', help='The name of an existing storage account to use with the container instance. If not specified, the container instance will not mount a persistant file share.')
+    parser.add_argument('--identity', '-id', required=True, help='The client (app) id for the service principal to use for authentication.')
     parser.add_argument('--client-id', '-cid', required=True, help='The client (app) id for the service principal to use for authentication.')
     parser.add_argument('--client-secret', '-cs', required=True, help='The secret for the service principal to use for authentication.')
     parser.add_argument('--repository', '-r', required=True, help='The git repository that contains your image.yml and buiild scripts.')
@@ -86,14 +87,20 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    client_id = args.client_id
-    client_secret = args.client_secret
+    # client_id = args.client_id
+    # client_secret = args.client_secret
+    identity = args.identity
 
     repo = repos.parse_url(args.repository)
 
+    # params = {
+    #     'clientId': client_id,
+    #     'clientSecret': client_secret,
+    #     'repository': repo['url'].replace('https://', f'https://{args.token}@') if args.token else repo['url']
+    # }
+
     params = {
-        'clientId': client_id,
-        'clientSecret': client_secret,
+        'identityId': identity,
         'repository': repo['url'].replace('https://', f'https://{args.token}@') if args.token else repo['url']
     }
 
